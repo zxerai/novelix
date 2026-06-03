@@ -2115,10 +2115,11 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
 
   function parseVolumeOKRs(raw: string, volNum: number): string[] {
     const okrs: string[] = [];
-    const pattern = `\\*\\*卷${volNum} Objective[\\s\\S]*?(?=\\n\\*\\*卷|\\n##|$)`;
+    const pattern =
+      "\\*\\*卷" + volNum + " Objective[\\s\\S]*?(?=\\n\\*\\*卷|\\n##|$)";
     const okrSection = raw.match(new RegExp(pattern));
     if (!okrSection) return okrs;
-    const krs = okrSection[0].match(/- KR\\d:[^\\n]+/g);
+    const krs = okrSection[0].match(/- KR\d:[^\n]+/g);
     if (krs)
       okrs.push(
         ...krs
@@ -2130,7 +2131,7 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
 
   function parseVolumeHooks(raw: string, volNum: number): string[] {
     const hooks: string[] = [];
-    const hookSection = raw.match(/## 卷间钩子[\\s\\S]*?(?=\\n##|$)/);
+    const hookSection = raw.match(/## 卷间钩子[\s\S]*?(?=\n##|$)/);
     if (!hookSection) return hooks;
     const volRefs = hookSection[0].match(
       new RegExp(`- [^\\n]*卷${volNum}[^\\n]*`, "g"),
@@ -2139,9 +2140,7 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
       hooks.push(
         ...volRefs.slice(0, 3).map((h) => h.replace(/^- /, "").slice(0, 100)),
       );
-    const backHooks = hookSection[0].match(
-      /- 核心钩子\\d+\\([^)]+\\)：[^\\n]+/g,
-    );
+    const backHooks = hookSection[0].match(/- 核心钩子\d+\([^)]+\)：[^\n]+/g);
     if (backHooks) {
       const perVol = Math.ceil(backHooks.length / 5);
       const start = (volNum - 1) * perVol;
