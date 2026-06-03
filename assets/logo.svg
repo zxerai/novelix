@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2d1b0e"/>
+      <stop offset="100%" stop-color="#1a1008"/>
+    </linearGradient>
+    <linearGradient id="drop" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f4a261"/>
+      <stop offset="100%" stop-color="#e76f51"/>
+    </linearGradient>
+    <linearGradient id="nib" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fefae0"/>
+      <stop offset="100%" stop-color="#dda15e"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="256" cy="256" r="240" fill="url(#bg)" stroke="#f4a261" stroke-width="2.5" opacity="0.95"/>
+
+  <!-- Subtle ring -->
+  <circle cx="256" cy="256" r="210" fill="none" stroke="#dda15e" stroke-width="1" stroke-dasharray="8 8" opacity="0.25"/>
+
+  <!-- Ink drop -->
+  <path d="M256 120 C256 120, 340 230, 340 305 C340 352, 302 392, 256 392 C210 392, 172 352, 172 305 C172 230, 256 120, 256 120Z"
+        fill="url(#drop)" filter="url(#glow)" opacity="0.9"/>
+
+  <!-- Quill nib -->
+  <path d="M256 180 L240 315 L256 345 L272 315 Z"
+        fill="url(#nib)" opacity="0.85"/>
+
+  <!-- Nib split -->
+  <line x1="256" y1="215" x2="256" y2="335" stroke="#2d1b0e" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- Warm accent dots -->
+  <circle cx="190" cy="240" r="3" fill="#f4a261" opacity="0.5"/>
+  <circle cx="322" cy="240" r="3" fill="#f4a261" opacity="0.5"/>
+  <circle cx="170" cy="325" r="3" fill="#e9c46a" opacity="0.4"/>
+  <circle cx="342" cy="325" r="3" fill="#e9c46a" opacity="0.4"/>
+
+</svg>

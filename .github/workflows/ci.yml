@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node-version: [20, 22, 24]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test
+
+  verify-pack:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - name: Verify no workspace:* in tarballs
+        run: |
+          set -euo pipefail
+          for pkg in packages/core packages/cli; do
+            echo "--- Checking $pkg ---"
+            cd "$pkg"
+            PACKDIR=$(mktemp -d)
+            npm pack --pack-destination "$PACKDIR" 2>/dev/null
+            TGZ=$(ls "$PACKDIR"/*.tgz)
+            PACKED_PKG=$(tar -xOf "$TGZ" package/package.json)
+            if echo "$PACKED_PKG" | grep -q '"workspace:'; then
+              echo "FAIL: $pkg tarball still contains workspace: protocol"
+              echo "$PACKED_PKG" | grep 'workspace:'
+              rm -rf "$PACKDIR"
+              exit 1
+            fi
+            echo "OK: $pkg tarball is clean"
+            rm -rf "$PACKDIR"
+            cd - >/dev/null
+          done

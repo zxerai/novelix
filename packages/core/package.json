@@ -1,0 +1,61 @@
+{
+  "name": "@actalk/jiaos-core",
+  "version": "1.4.1",
+  "description": "JiaOS core engine — multi-agent novel writing pipeline with 33-dimension continuity audit, style cloning, and de-AI-ification",
+  "keywords": [
+    "ai-novel-writing",
+    "ai-writing-agent",
+    "novel-generator",
+    "multi-agent-pipeline",
+    "continuity-audit",
+    "style-cloning",
+    "ai-fiction",
+    "creative-writing-ai",
+    "llm-agent",
+    "zod-validation"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!dist/__tests__",
+    "genres"
+  ],
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zxerai/jiaos.git",
+    "directory": "packages/core"
+  },
+  "scripts": {
+    "prepack": "node ../../scripts/prepare-package-for-publish.mjs",
+    "postpack": "node ../../scripts/restore-package-json.mjs",
+    "prepublishOnly": "node ../../scripts/verify-no-workspace-protocol.mjs .",
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mariozechner/pi-agent-core": "^0.67.1",
+    "@mariozechner/pi-ai": "^0.67.1",
+    "@sinclair/typebox": "^0.34.49",
+    "dotenv": "^16.4.0",
+    "epub-gen-memory": "^1.0.10",
+    "js-yaml": "^4.1.1",
+    "undici": "6.21.3",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "typescript": "^5.8.0",
+    "vitest": "^3.0.0"
+  }
+}

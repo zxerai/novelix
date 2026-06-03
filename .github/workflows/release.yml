@@ -1,0 +1,317 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22, 24]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm --filter @actalk/jiaos-core typecheck
+      - run: pnpm --filter @actalk/jiaos typecheck
+      - run: pnpm test
+
+  smoke-test:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - name: Smoke test — CLI help and version
+        run: |
+          node packages/cli/dist/index.js --help
+          node packages/cli/dist/index.js --version
+
+      - name: Smoke test — core import
+        run: node -e "import('./packages/core/dist/index.js').then(m => { if (!m.PipelineRunner) throw new Error('missing PipelineRunner'); console.log('core import OK') })"
+
+      - name: Smoke test — verify no workspace:* in tarballs
+        run: |
+          set -euo pipefail
+          for pkg in packages/core packages/cli packages/studio; do
+            echo "--- Checking $pkg ---"
+            cd "$pkg"
+            PACKDIR=$(mktemp -d)
+            npm pack --pack-destination "$PACKDIR" 2>/dev/null
+            TGZ=$(ls "$PACKDIR"/*.tgz)
+            PACKED_PKG=$(tar -xOf "$TGZ" package/package.json)
+            if echo "$PACKED_PKG" | grep -q '"workspace:'; then
+              echo "FAIL: $pkg tarball still contains workspace: protocol"
+              echo "$PACKED_PKG" | grep 'workspace:'
+              exit 1
+            fi
+            echo "OK: $pkg tarball is clean"
+            rm -rf "$PACKDIR"
+            cd - >/dev/null
+          done
+
+  publish-canary:
+    runs-on: ubuntu-latest
+    needs: smoke-test
+    outputs:
+      release_version: ${{ steps.versions.outputs.release_version }}
+      canary_version: ${{ steps.versions.outputs.canary_version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - name: Derive release versions
+        id: versions
+        run: |
+          RELEASE_VERSION="${GITHUB_REF_NAME#v}"
+          CANARY_VERSION="${RELEASE_VERSION}-canary.${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}"
+          echo "release_version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "canary_version=$CANARY_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Rewrite package versions for canary publish
+        run: |
+          node scripts/set-package-versions.mjs "${{ steps.versions.outputs.canary_version }}" --root .
+          pnpm verify:publish-manifests
+
+      - name: Publish core canary
+        working-directory: packages/core
+        run: pnpm publish --tag canary --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Studio canary
+        working-directory: packages/studio
+        run: pnpm publish --tag canary --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish CLI canary
+        working-directory: packages/cli
+        run: pnpm publish --tag canary --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  verify-canary:
+    runs-on: ubuntu-latest
+    needs: publish-canary
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Verify canary dist-tag and installation
+        run: |
+          set -euo pipefail
+          EXPECTED_CANARY="${{ needs.publish-canary.outputs.canary_version }}"
+
+          ACTUAL_CANARY=""
+          for _ in 1 2 3 4 5 6; do
+            ACTUAL_CANARY=$(npm view @actalk/jiaos@canary version 2>/dev/null || true)
+            if [ "$ACTUAL_CANARY" = "$EXPECTED_CANARY" ]; then
+              break
+            fi
+            sleep 10
+          done
+
+          if [ "$ACTUAL_CANARY" != "$EXPECTED_CANARY" ]; then
+            echo "FATAL: canary dist-tag mismatch: expected $EXPECTED_CANARY got ${ACTUAL_CANARY:-<empty>}"
+            exit 1
+          fi
+
+          TMPDIR=$(mktemp -d)
+          cd "$TMPDIR"
+          npm init -y
+          npm install "@actalk/jiaos@$EXPECTED_CANARY"
+
+          if grep -q '"workspace:' node_modules/@actalk/jiaos/package.json; then
+            echo "FATAL: canary CLI package still contains workspace: protocol"
+            cat node_modules/@actalk/jiaos/package.json | grep workspace
+            exit 1
+          fi
+
+          if grep -q '"workspace:' node_modules/@actalk/jiaos-studio/package.json; then
+            echo "FATAL: canary studio package still contains workspace: protocol"
+            cat node_modules/@actalk/jiaos-studio/package.json | grep workspace
+            exit 1
+          fi
+
+          if grep -q '"workspace:' node_modules/@actalk/jiaos-core/package.json; then
+            echo "FATAL: canary core package still contains workspace: protocol"
+            cat node_modules/@actalk/jiaos-core/package.json | grep workspace
+            exit 1
+          fi
+
+          npx jiaos --version
+          test -f node_modules/@actalk/jiaos-studio/dist/api/index.js
+          node -e "import('@actalk/jiaos-core').then(m => { if (!m.PipelineRunner) throw new Error('installed core import missing PipelineRunner'); console.log('installed core import OK') })"
+          test -f node_modules/@actalk/jiaos-core/dist/notify/telegram.js || test -f node_modules/@actalk/jiaos/node_modules/@actalk/jiaos-core/dist/notify/telegram.js
+          echo "Canary verification passed"
+          rm -rf "$TMPDIR"
+
+  publish-release:
+    runs-on: ubuntu-latest
+    needs: [publish-canary, verify-canary]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - name: Rewrite package versions for final publish
+        run: |
+          node scripts/set-package-versions.mjs "${{ needs.publish-canary.outputs.release_version }}" --root .
+          pnpm verify:publish-manifests
+
+      - name: Publish core latest
+        working-directory: packages/core
+        run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Studio latest
+        working-directory: packages/studio
+        run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish CLI latest
+        working-directory: packages/cli
+        run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  verify-release:
+    runs-on: ubuntu-latest
+    needs: [publish-canary, publish-release]
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Verify latest dist-tag and installation
+        run: |
+          set -euo pipefail
+          EXPECTED_RELEASE="${{ needs.publish-canary.outputs.release_version }}"
+
+          ACTUAL_LATEST=""
+          for _ in 1 2 3 4 5 6; do
+            ACTUAL_LATEST=$(npm view @actalk/jiaos@latest version 2>/dev/null || true)
+            if [ "$ACTUAL_LATEST" = "$EXPECTED_RELEASE" ]; then
+              break
+            fi
+            sleep 10
+          done
+
+          if [ "$ACTUAL_LATEST" != "$EXPECTED_RELEASE" ]; then
+            echo "FATAL: latest dist-tag mismatch: expected $EXPECTED_RELEASE got ${ACTUAL_LATEST:-<empty>}"
+            exit 1
+          fi
+
+          TMPDIR=$(mktemp -d)
+          cd "$TMPDIR"
+          npm init -y
+          npm install "@actalk/jiaos@$EXPECTED_RELEASE"
+
+          if grep -q '"workspace:' node_modules/@actalk/jiaos/package.json; then
+            echo "FATAL: released CLI package still contains workspace: protocol"
+            cat node_modules/@actalk/jiaos/package.json | grep workspace
+            exit 1
+          fi
+
+          if grep -q '"workspace:' node_modules/@actalk/jiaos-studio/package.json; then
+            echo "FATAL: released studio package still contains workspace: protocol"
+            cat node_modules/@actalk/jiaos-studio/package.json | grep workspace
+            exit 1
+          fi
+
+          if grep -q '"workspace:' node_modules/@actalk/jiaos-core/package.json; then
+            echo "FATAL: released core package still contains workspace: protocol"
+            cat node_modules/@actalk/jiaos-core/package.json | grep workspace
+            exit 1
+          fi
+
+          npx jiaos --version
+          test -f node_modules/@actalk/jiaos-studio/dist/api/index.js
+          node -e "import('@actalk/jiaos-core').then(m => { if (!m.PipelineRunner) throw new Error('installed core import missing PipelineRunner'); console.log('installed core import OK') })"
+          test -f node_modules/@actalk/jiaos-core/dist/notify/telegram.js || test -f node_modules/@actalk/jiaos/node_modules/@actalk/jiaos-core/dist/notify/telegram.js
+          echo "Release verification passed"
+          rm -rf "$TMPDIR"
+
+  github-release:
+    runs-on: ubuntu-latest
+    needs: verify-release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p' || echo "")
+          if [ -n "$PREV_TAG" ]; then
+            echo "notes<<EOF" >> "$GITHUB_OUTPUT"
+            git log --pretty=format:"- %s (%h)" "$PREV_TAG"..HEAD >> "$GITHUB_OUTPUT"
+            echo "" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+          else
+            echo "notes=Initial release" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.notes.outputs.notes }}
+          generate_release_notes: true

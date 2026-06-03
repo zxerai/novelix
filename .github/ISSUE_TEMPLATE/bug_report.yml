@@ -1,0 +1,71 @@
+name: Bug Report
+description: Something isn't working as expected
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug clearly. Include the exact error message if any.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the issue.
+      placeholder: |
+        1. jiaos init test
+        2. jiaos book create --title '...' --genre xuanhuan
+        3. jiaos write next ...
+        4. See error: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened instead?
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: JiaOS version
+      description: Output of `jiaos --version`
+      placeholder: "0.4.5"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Linux
+        - Windows (WSL)
+        - Windows (native)
+    validations:
+      required: true
+
+  - type: input
+    id: model
+    attributes:
+      label: LLM provider / model
+      description: e.g. openai/gpt-4o, anthropic/claude-sonnet, ollama/qwen3:8b
+      placeholder: "openai/gpt-4o"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Paste any error output, truncated chapter content, or debug logs.
+      render: shell
+    validations:
+      required: false

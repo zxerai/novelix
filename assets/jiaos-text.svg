@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 90" fill="none">
+  <defs>
+    <linearGradient id="txtDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fefae0"/>
+      <stop offset="50%" stop-color="#f4e8c1"/>
+      <stop offset="100%" stop-color="#dda15e"/>
+    </linearGradient>
+    <linearGradient id="txtLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2d1b0e"/>
+      <stop offset="100%" stop-color="#4a2c17"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f4a261"/>
+      <stop offset="100%" stop-color="#e76f51"/>
+    </linearGradient>
+    <filter id="textGlow">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0.8 0.4 0 0  0.8 0.6 0.2 0 0  0.4 0.2 0 0 0  0 0 0 0.2 0" result="warmBlur"/>
+      <feMerge><feMergeNode in="warmBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <style>
+      .word { fill: url(#txtLight); }
+      .swoosh { stroke: url(#accent); opacity: 0.9; }
+      @media (prefers-color-scheme: dark) {
+        .word { fill: url(#txtDark); filter: url(#textGlow); }
+        .swoosh { opacity: 0.7; }
+      }
+    </style>
+  </defs>
+
+  <text class="word" x="170" y="58" text-anchor="middle"
+        font-family="Georgia, 'Noto Serif', 'Times New Roman', serif"
+        font-size="64" font-weight="bold" letter-spacing="6">JiaOS</text>
+
+  <path class="swoosh" d="M30 72 C85 82, 150 66, 210 74 C250 78, 285 69, 318 76"
+        stroke="url(#accent)" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+
+  <circle cx="323" cy="74" r="2.5" fill="#e76f51" opacity="0.5"/>
+  <circle cx="24" cy="74" r="1.6" fill="#f4a261" opacity="0.4"/>
+</svg>

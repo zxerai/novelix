@@ -1,0 +1,196 @@
+{"level":"info","tag":"studio","message":"阶段：准备章节输入","timestamp":"2026-06-02T15:00:33.701Z"}
+{"level":"warn","tag":"planner","message":"[planner] memo parse failed (attempt 1/3): chapter mismatch: expected 7, got 12","timestamp":"2026-06-02T15:01:10.411Z"}
+{"level":"info","tag":"studio","message":"阶段：撰写章节草稿","timestamp":"2026-06-02T15:01:33.708Z"}
+{"level":"info","tag":"writer","message":"阶段 1：创作正文（第7章）","timestamp":"2026-06-02T15:01:33.715Z"}
+{"level":"info","tag":"writer","message":"阶段 2：状态结算（第7章，5086字）","timestamp":"2026-06-02T15:02:28.940Z"}
+{"level":"info","tag":"writer","message":"阶段 2a：提取第7章事实","timestamp":"2026-06-02T15:02:28.943Z"}
+{"level":"info","tag":"writer","message":"阶段 2b：把观察结果回写到真相文件","timestamp":"2026-06-02T15:03:24.925Z"}
+{"level":"info","tag":"studio","message":"审计前字数归一化：第7章 5058 -> 3854","timestamp":"2026-06-02T15:04:29.940Z"}
+{"level":"info","tag":"studio","message":"阶段：审计草稿","timestamp":"2026-06-02T15:04:29.941Z"}
+{"level":"info","tag":"studio","message":"阶段：修复轮次 1/1（当前 92 分）","timestamp":"2026-06-02T15:04:45.933Z"}
+{"level":"info","tag":"studio","message":"阶段：审计第6章","timestamp":"2026-06-02T15:17:03.011Z"}
+{"level":"info","tag":"studio","message":"阶段：准备章节输入","timestamp":"2026-06-02T15:24:48.149Z"}
+{"level":"info","tag":"studio","message":"阶段：撰写章节草稿","timestamp":"2026-06-02T15:24:48.178Z"}
+{"level":"info","tag":"writer","message":"阶段 1：创作正文（第7章）","timestamp":"2026-06-02T15:24:48.183Z"}
+{"level":"info","tag":"writer","message":"阶段 2：状态结算（第7章，4117字）","timestamp":"2026-06-02T15:25:39.623Z"}
+{"level":"info","tag":"writer","message":"阶段 2a：提取第7章事实","timestamp":"2026-06-02T15:25:39.627Z"}
+{"level":"info","tag":"writer","message":"阶段 2b：把观察结果回写到真相文件","timestamp":"2026-06-02T15:26:39.383Z"}
+{"level":"warn","tag":"writer","message":"[warning] 段落过碎: 128个段落里有80个不足35字，段落被切得过碎。","timestamp":"2026-06-02T15:27:10.792Z"}
+{"level":"warn","tag":"writer","message":"后写校验：第7章 1 个错误，3 个警告","timestamp":"2026-06-02T15:27:10.792Z"}
+{"level":"warn","tag":"writer","message":"[error] 禁止句式: 出现了「不是……而是……」句式","timestamp":"2026-06-02T15:27:10.792Z"}
+{"level":"warn","tag":"writer","message":"[warning] 连续了字: 检测到6句连续包含\"了\"字，节奏拖沓","timestamp":"2026-06-02T15:27:10.792Z"}
+{"level":"warn","tag":"writer","message":"[info] 对话偏少: 对话段落占比4%，低于推荐值20-40%。本章以叙述为主。","timestamp":"2026-06-02T15:27:10.792Z"}
+{"level":"warn","tag":"writer","message":"[warning] 连续短段: 连续出现6个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-02T15:27:10.792Z"}
+{"level":"warn","tag":"writer","message":"AI 味检查：第7章发现 1 个问题","timestamp":"2026-06-02T15:27:10.792Z"}
+{"level":"warn","tag":"writer","message":"[warning] 套话密度: 套话词（似乎/可能/或许等）密度为3.2次/千字（阈值>3），语气过于模糊犹豫","timestamp":"2026-06-02T15:27:10.792Z"}
+{"level":"info","tag":"studio","message":"审计前字数归一化：第7章 4085 -> 2096","timestamp":"2026-06-02T15:27:30.649Z"}
+{"level":"info","tag":"studio","message":"阶段：审计草稿","timestamp":"2026-06-02T15:27:30.649Z"}
+{"level":"info","tag":"studio","message":"阶段：修复轮次 1/1（当前 82 分）","timestamp":"2026-06-02T15:28:04.348Z"}
+{"level":"info","tag":"studio","message":"阶段：落盘最终章节","timestamp":"2026-06-02T15:29:03.098Z"}
+{"level":"info","tag":"studio","message":"阶段：生成最终真相文件","timestamp":"2026-06-02T15:29:03.098Z"}
+{"level":"info","tag":"studio","message":"阶段：校验真相文件变更","timestamp":"2026-06-02T15:30:00.861Z"}
+{"level":"warn","tag":"studio","message":"  [minor] H02状态字段写open但备注写pressured，不一致","timestamp":"2026-06-02T15:30:20.258Z"}
+{"level":"warn","tag":"studio","message":"状态校验：第7章发现 3 条警告","timestamp":"2026-06-02T15:30:20.258Z"}
+{"level":"warn","tag":"studio","message":"  [minor] H08状态从pressured改为open，但文本推进了信息","timestamp":"2026-06-02T15:30:20.258Z"}
+{"level":"warn","tag":"studio","message":"  [minor] H13状态从pressured改为open，但文本加深了信息","timestamp":"2026-06-02T15:30:20.258Z"}
+{"level":"warn","tag":"studio","message":"[paragraph] 连续出现3个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-02T15:30:20.264Z"}
+{"level":"info","tag":"studio","message":"阶段：同步记忆索引","timestamp":"2026-06-02T15:30:20.270Z"}
+{"level":"info","tag":"studio","message":"阶段：更新章节索引与快照","timestamp":"2026-06-02T15:30:20.283Z"}
+{"level":"info","tag":"studio","message":"阶段：审计第7章","timestamp":"2026-06-02T15:31:14.696Z"}
+{"level":"info","tag":"studio","message":"阶段：准备章节输入","timestamp":"2026-06-02T15:58:57.048Z"}
+{"level":"info","tag":"studio","message":"阶段：撰写章节草稿","timestamp":"2026-06-02T15:59:25.517Z"}
+{"level":"info","tag":"writer","message":"阶段 1：创作正文（第8章）","timestamp":"2026-06-02T15:59:25.525Z"}
+{"level":"info","tag":"writer","message":"阶段 2：状态结算（第8章，3936字）","timestamp":"2026-06-02T16:00:09.341Z"}
+{"level":"info","tag":"writer","message":"阶段 2a：提取第8章事实","timestamp":"2026-06-02T16:00:09.344Z"}
+{"level":"info","tag":"writer","message":"阶段 2b：把观察结果回写到真相文件","timestamp":"2026-06-02T16:00:47.143Z"}
+{"level":"warn","tag":"writer","message":"后写校验：第8章 2 个错误，2 个警告","timestamp":"2026-06-02T16:01:10.489Z"}
+{"level":"warn","tag":"writer","message":"[error] 禁止句式: 出现了「不是……而是……」句式","timestamp":"2026-06-02T16:01:10.489Z"}
+{"level":"warn","tag":"writer","message":"[error] 章节号指称: 正文中出现了章节号指称：\"第8章\"。角色不知道自己在第几章。","timestamp":"2026-06-02T16:01:10.489Z"}
+{"level":"warn","tag":"writer","message":"[warning] 连续短段: 连续出现7个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-02T16:01:10.489Z"}
+{"level":"warn","tag":"writer","message":"[warning] 跨章重复: 3个重复短语在近期章节中也出现过：\"七号环扣残骸\"(×3)、\"号环扣残骸上\"(×2)、\"环扣残骸上的\"(×2)","timestamp":"2026-06-02T16:01:10.489Z"}
+{"level":"warn","tag":"writer","message":"AI 味检查：第8章发现 1 个问题","timestamp":"2026-06-02T16:01:10.489Z"}
+{"level":"warn","tag":"writer","message":"[warning] 套话密度: 套话词（似乎/可能/或许等）密度为3.4次/千字（阈值>3），语气过于模糊犹豫","timestamp":"2026-06-02T16:01:10.489Z"}
+{"level":"info","tag":"studio","message":"审计前字数归一化：第8章 3918 -> 2065","timestamp":"2026-06-02T16:01:23.208Z"}
+{"level":"info","tag":"studio","message":"阶段：审计草稿","timestamp":"2026-06-02T16:01:23.208Z"}
+{"level":"info","tag":"studio","message":"阶段：修复轮次 1/1（当前 35 分）","timestamp":"2026-06-02T16:01:42.194Z"}
+{"level":"info","tag":"studio","message":"阶段：落盘最终章节","timestamp":"2026-06-02T16:02:30.269Z"}
+{"level":"info","tag":"studio","message":"阶段：生成最终真相文件","timestamp":"2026-06-02T16:02:30.269Z"}
+{"level":"info","tag":"studio","message":"阶段：校验真相文件变更","timestamp":"2026-06-02T16:03:29.401Z"}
+{"level":"warn","tag":"studio","message":"状态校验：第8章发现 1 条警告","timestamp":"2026-06-02T16:03:53.687Z"}
+{"level":"warn","tag":"studio","message":"  [minor] 状态卡“主角状态”写“距离东菱验修为只剩一天”，但文本明确“后天才是验修”，实际只剩两天；不过东菱封院行动在明天，此表述易混淆，建议统一。","timestamp":"2026-06-02T16:03:53.687Z"}
+{"level":"info","tag":"studio","message":"阶段：同步记忆索引","timestamp":"2026-06-02T16:03:53.701Z"}
+{"level":"info","tag":"studio","message":"阶段：更新章节索引与快照","timestamp":"2026-06-02T16:03:53.715Z"}
+{"level":"info","tag":"studio","message":"阶段：审计第8章","timestamp":"2026-06-02T16:05:52.249Z"}
+{"level":"info","tag":"studio","message":"阶段：加载第8章修订上下文","timestamp":"2026-06-02T16:06:35.728Z"}
+{"level":"info","tag":"studio","message":"阶段：修订第8章","timestamp":"2026-06-02T16:06:58.383Z"}
+{"level":"info","tag":"studio","message":"阶段：落盘第8章修订结果","timestamp":"2026-06-02T16:08:00.289Z"}
+{"level":"info","tag":"studio","message":"阶段：更新第8章索引与快照","timestamp":"2026-06-02T16:08:00.297Z"}
+{"level":"info","tag":"studio","message":"阶段：审计第8章","timestamp":"2026-06-02T16:08:04.146Z"}
+{"level":"info","tag":"studio","message":"阶段：准备章节输入","timestamp":"2026-06-02T16:08:42.198Z"}
+{"level":"info","tag":"studio","message":"阶段：撰写章节草稿","timestamp":"2026-06-02T16:09:10.551Z"}
+{"level":"info","tag":"writer","message":"阶段 1：创作正文（第9章）","timestamp":"2026-06-02T16:09:10.558Z"}
+{"level":"info","tag":"writer","message":"阶段 2：状态结算（第9章，3863字）","timestamp":"2026-06-02T16:09:54.682Z"}
+{"level":"info","tag":"writer","message":"阶段 2a：提取第9章事实","timestamp":"2026-06-02T16:09:54.683Z"}
+{"level":"info","tag":"writer","message":"阶段 2b：把观察结果回写到真相文件","timestamp":"2026-06-02T16:10:46.798Z"}
+{"level":"warn","tag":"writer","message":"后写校验：第9章 2 个错误，3 个警告","timestamp":"2026-06-02T16:11:45.086Z"}
+{"level":"warn","tag":"writer","message":"[warning] 转折词密度: 转折/惊讶标记词共2次（上限1次/4059字），明细：\"忽然\"×2","timestamp":"2026-06-02T16:11:45.086Z"}
+{"level":"warn","tag":"writer","message":"[error] 章节号指称: 正文中出现了章节号指称：\"第9章\"。角色不知道自己在第几章。","timestamp":"2026-06-02T16:11:45.086Z"}
+{"level":"warn","tag":"writer","message":"[warning] 作者说教: 出现说教词：\"显然\"","timestamp":"2026-06-02T16:11:45.086Z"}
+{"level":"warn","tag":"writer","message":"[error] 禁止句式: 出现了「不是……而是……」句式","timestamp":"2026-06-02T16:11:45.086Z"}
+{"level":"warn","tag":"writer","message":"[warning] 连续短段: 连续出现6个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-02T16:11:45.086Z"}
+{"level":"info","tag":"studio","message":"阶段：审计草稿","timestamp":"2026-06-02T16:11:45.087Z"}
+{"level":"info","tag":"studio","message":"阶段：准备章节输入","timestamp":"2026-06-02T16:12:56.870Z"}
+{"level":"info","tag":"studio","message":"阶段：撰写章节草稿","timestamp":"2026-06-02T16:12:56.881Z"}
+{"level":"info","tag":"writer","message":"阶段 1：创作正文（第9章）","timestamp":"2026-06-02T16:12:56.886Z"}
+{"level":"info","tag":"writer","message":"阶段 2：状态结算（第9章，4465字）","timestamp":"2026-06-02T16:13:54.923Z"}
+{"level":"info","tag":"writer","message":"阶段 2a：提取第9章事实","timestamp":"2026-06-02T16:13:54.924Z"}
+{"level":"info","tag":"writer","message":"阶段 2b：把观察结果回写到真相文件","timestamp":"2026-06-02T16:15:10.604Z"}
+{"level":"info","tag":"studio","message":"阶段：审计第8章","timestamp":"2026-06-02T16:15:54.821Z"}
+{"level":"warn","tag":"writer","message":"[error] 章节号指称: 正文中出现了章节号指称：\"第9章\"。角色不知道自己在第几章。","timestamp":"2026-06-02T16:16:12.515Z"}
+{"level":"warn","tag":"writer","message":"[info] 对话偏多: 对话段落占比62%，高于推荐值20-40%。本章以对话推进为主。","timestamp":"2026-06-02T16:16:12.515Z"}
+{"level":"warn","tag":"writer","message":"后写校验：第9章 1 个错误，0 个警告","timestamp":"2026-06-02T16:16:12.515Z"}
+{"level":"info","tag":"studio","message":"阶段：加载第8章修订上下文","timestamp":"2026-06-02T16:16:31.307Z"}
+{"level":"info","tag":"studio","message":"审计前字数归一化：第9章 4439 -> 2270","timestamp":"2026-06-02T16:16:35.178Z"}
+{"level":"info","tag":"studio","message":"阶段：审计草稿","timestamp":"2026-06-02T16:16:35.179Z"}
+{"level":"info","tag":"studio","message":"阶段：修订第8章","timestamp":"2026-06-02T16:16:47.203Z"}
+{"level":"info","tag":"studio","message":"阶段：修复轮次 1/1（当前 0 分）","timestamp":"2026-06-02T16:17:00.477Z"}
+{"level":"info","tag":"studio","message":"阶段：落盘第8章修订结果","timestamp":"2026-06-02T16:17:42.500Z"}
+{"level":"info","tag":"studio","message":"阶段：更新第8章索引与快照","timestamp":"2026-06-02T16:17:42.506Z"}
+{"level":"info","tag":"studio","message":"阶段：审计第8章","timestamp":"2026-06-02T16:17:45.838Z"}
+{"level":"info","tag":"studio","message":"阶段：准备章节输入","timestamp":"2026-06-02T16:18:32.705Z"}
+{"level":"info","tag":"studio","message":"阶段：撰写章节草稿","timestamp":"2026-06-02T16:18:32.713Z"}
+{"level":"info","tag":"writer","message":"阶段 1：创作正文（第9章）","timestamp":"2026-06-02T16:18:32.718Z"}
+{"level":"info","tag":"studio","message":"阶段：修复后达到通过线（88 分），退出循环","timestamp":"2026-06-02T16:18:38.369Z"}
+{"level":"info","tag":"studio","message":"阶段：落盘最终章节","timestamp":"2026-06-02T16:18:38.371Z"}
+{"level":"info","tag":"studio","message":"阶段：生成最终真相文件","timestamp":"2026-06-02T16:18:38.371Z"}
+{"level":"info","tag":"writer","message":"阶段 2：状态结算（第9章，4586字）","timestamp":"2026-06-02T16:19:28.876Z"}
+{"level":"info","tag":"writer","message":"阶段 2a：提取第9章事实","timestamp":"2026-06-02T16:19:28.877Z"}
+{"level":"info","tag":"studio","message":"阶段：校验真相文件变更","timestamp":"2026-06-02T16:20:13.780Z"}
+{"level":"info","tag":"writer","message":"阶段 2b：把观察结果回写到真相文件","timestamp":"2026-06-02T16:20:22.827Z"}
+{"level":"warn","tag":"studio","message":"  [minor] 状态卡中“矮壮帮工（老周）”的命名与文本铁匠老周混淆，文本未给出该帮工名字，建议统一为“矮壮帮工”或确认姓名。","timestamp":"2026-06-02T16:20:43.461Z"}
+{"level":"warn","tag":"studio","message":"状态校验：第9章发现 1 条警告","timestamp":"2026-06-02T16:20:43.461Z"}
+{"level":"warn","tag":"studio","message":"[paragraph] 连续出现3个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-02T16:20:43.467Z"}
+{"level":"info","tag":"studio","message":"阶段：同步记忆索引","timestamp":"2026-06-02T16:20:43.473Z"}
+{"level":"info","tag":"studio","message":"阶段：更新章节索引与快照","timestamp":"2026-06-02T16:20:43.484Z"}
+{"level":"warn","tag":"writer","message":"后写校验：第9章 1 个错误，2 个警告","timestamp":"2026-06-02T16:21:15.544Z"}
+{"level":"warn","tag":"writer","message":"[error] 章节号指称: 正文中出现了章节号指称：\"第9章\"。角色不知道自己在第几章。","timestamp":"2026-06-02T16:21:15.544Z"}
+{"level":"warn","tag":"writer","message":"[warning] 连续了字: 检测到7句连续包含\"了\"字，节奏拖沓","timestamp":"2026-06-02T16:21:15.544Z"}
+{"level":"warn","tag":"writer","message":"[warning] 连续短段: 连续出现5个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-02T16:21:15.544Z"}
+{"level":"info","tag":"studio","message":"审计前字数归一化：第9章 4560 -> 2739","timestamp":"2026-06-02T16:21:34.809Z"}
+{"level":"info","tag":"studio","message":"阶段：审计草稿","timestamp":"2026-06-02T16:21:34.809Z"}
+{"level":"info","tag":"studio","message":"阶段：修复轮次 1/1（当前 83 分）","timestamp":"2026-06-02T16:22:07.741Z"}
+{"level":"info","tag":"studio","message":"阶段：修复后达到通过线（87 分），退出循环","timestamp":"2026-06-02T16:23:08.247Z"}
+{"level":"info","tag":"studio","message":"[promotion] 2 hook(s) promoted after chapter 9","timestamp":"2026-06-02T16:23:08.252Z"}
+{"level":"info","tag":"studio","message":"阶段：落盘最终章节","timestamp":"2026-06-02T16:23:08.252Z"}
+{"level":"info","tag":"studio","message":"阶段：生成最终真相文件","timestamp":"2026-06-02T16:23:08.252Z"}
+{"level":"info","tag":"studio","message":"阶段：校验真相文件变更","timestamp":"2026-06-02T16:24:34.949Z"}
+{"level":"warn","tag":"studio","message":"  [minor] 文本中洛尘远观老木匠与小杨说话、小杨右手发抖的细节未在状态卡中体现","timestamp":"2026-06-02T16:24:57.895Z"}
+{"level":"warn","tag":"studio","message":"状态校验：第9章发现 2 条警告","timestamp":"2026-06-02T16:24:57.895Z"}
+{"level":"warn","tag":"studio","message":"  [hook_anomaly] Hook-2（工痕来源）文本中已通过三重验证确认使用者身份，但新池状态仍为open，建议调整为near_payoff或resolved","timestamp":"2026-06-02T16:24:57.895Z"}
+{"level":"warn","tag":"studio","message":"[paragraph] 连续出现5个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-02T16:24:57.901Z"}
+{"level":"warn","tag":"studio","message":"[paragraph] 88个段落里有54个不足35字，段落被切得过碎。","timestamp":"2026-06-02T16:24:57.900Z"}
+{"level":"info","tag":"studio","message":"阶段：同步记忆索引","timestamp":"2026-06-02T16:24:57.905Z"}
+{"level":"info","tag":"studio","message":"阶段：更新章节索引与快照","timestamp":"2026-06-02T16:24:57.916Z"}
+{"level":"info","tag":"studio","message":"阶段：准备章节输入","timestamp":"2026-06-02T16:25:11.520Z"}
+{"level":"warn","tag":"planner","message":"[planner] memo parse failed (attempt 1/3): missing sections: ## 关键抉择过三连问","timestamp":"2026-06-02T16:25:46.614Z"}
+{"level":"info","tag":"studio","message":"阶段：撰写章节草稿","timestamp":"2026-06-02T16:26:19.685Z"}
+{"level":"info","tag":"writer","message":"阶段 1：创作正文（第10章）","timestamp":"2026-06-02T16:26:19.693Z"}
+{"level":"info","tag":"writer","message":"阶段 2：状态结算（第10章，4510字）","timestamp":"2026-06-02T16:27:12.868Z"}
+{"level":"info","tag":"writer","message":"阶段 2a：提取第10章事实","timestamp":"2026-06-02T16:27:12.869Z"}
+{"level":"info","tag":"studio","message":"阶段：审计第9章","timestamp":"2026-06-02T16:29:57.565Z"}
+{"level":"info","tag":"studio","message":"阶段：准备章节输入","timestamp":"2026-06-02T16:34:33.843Z"}
+{"level":"info","tag":"studio","message":"阶段：撰写章节草稿","timestamp":"2026-06-02T16:34:33.869Z"}
+{"level":"info","tag":"writer","message":"阶段 1：创作正文（第10章）","timestamp":"2026-06-02T16:34:33.877Z"}
+{"level":"info","tag":"writer","message":"阶段 2：状态结算（第10章，4660字）","timestamp":"2026-06-02T16:35:26.377Z"}
+{"level":"info","tag":"writer","message":"阶段 2a：提取第10章事实","timestamp":"2026-06-02T16:35:26.380Z"}
+{"level":"info","tag":"writer","message":"阶段 2b：把观察结果回写到真相文件","timestamp":"2026-06-02T16:36:14.706Z"}
+{"level":"warn","tag":"writer","message":"[error] 禁止句式: 出现了「不是……而是……」句式","timestamp":"2026-06-02T16:37:04.786Z"}
+{"level":"warn","tag":"writer","message":"后写校验：第10章 2 个错误，1 个警告","timestamp":"2026-06-02T16:37:04.786Z"}
+{"level":"warn","tag":"writer","message":"[warning] 连续短段: 连续出现3个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-02T16:37:04.786Z"}
+{"level":"warn","tag":"writer","message":"[error] 章节号指称: 正文中出现了章节号指称：\"第10章\"。角色不知道自己在第几章。","timestamp":"2026-06-02T16:37:04.786Z"}
+{"level":"info","tag":"studio","message":"审计前字数归一化：第10章 4625 -> 1994","timestamp":"2026-06-02T16:37:28.478Z"}
+{"level":"info","tag":"studio","message":"阶段：审计草稿","timestamp":"2026-06-02T16:37:28.478Z"}
+{"level":"info","tag":"studio","message":"阶段：修复轮次 1/1（当前 87 分）","timestamp":"2026-06-02T16:37:46.464Z"}
+{"level":"info","tag":"studio","message":"阶段：落盘最终章节","timestamp":"2026-06-02T16:38:39.466Z"}
+{"level":"info","tag":"studio","message":"阶段：生成最终真相文件","timestamp":"2026-06-02T16:38:39.466Z"}
+{"level":"info","tag":"studio","message":"[promotion] 1 hook(s) promoted after chapter 10","timestamp":"2026-06-02T16:38:39.466Z"}
+{"level":"info","tag":"studio","message":"阶段：校验真相文件变更","timestamp":"2026-06-02T16:39:39.012Z"}
+{"level":"warn","tag":"studio","message":"[paragraph] 连续出现3个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-02T16:39:46.678Z"}
+{"level":"info","tag":"studio","message":"阶段：同步记忆索引","timestamp":"2026-06-02T16:39:46.684Z"}
+{"level":"info","tag":"studio","message":"阶段：更新章节索引与快照","timestamp":"2026-06-02T16:39:46.697Z"}
+{"level":"info","tag":"studio","message":"阶段：审计第10章","timestamp":"2026-06-02T16:41:43.137Z"}
+{"level":"info","tag":"studio","message":"阶段：准备章节输入","timestamp":"2026-06-03T02:10:42.526Z"}
+{"level":"warn","tag":"planner","message":"[planner] memo parse failed (attempt 1/3): chapter mismatch: expected 11, got 12","timestamp":"2026-06-03T02:11:16.365Z"}
+{"level":"info","tag":"studio","message":"阶段：撰写章节草稿","timestamp":"2026-06-03T02:11:45.384Z"}
+{"level":"info","tag":"writer","message":"阶段 1：创作正文（第11章）","timestamp":"2026-06-03T02:11:45.392Z"}
+{"level":"info","tag":"writer","message":"阶段 2：状态结算（第11章，4691字）","timestamp":"2026-06-03T02:12:39.832Z"}
+{"level":"info","tag":"writer","message":"阶段 2a：提取第11章事实","timestamp":"2026-06-03T02:12:39.835Z"}
+{"level":"info","tag":"writer","message":"阶段 2b：把观察结果回写到真相文件","timestamp":"2026-06-03T02:13:24.809Z"}
+{"level":"warn","tag":"writer","message":"后写校验：第11章 2 个错误，2 个警告","timestamp":"2026-06-03T02:14:09.147Z"}
+{"level":"warn","tag":"writer","message":"[error] 禁止句式: 出现了「不是……而是……」句式","timestamp":"2026-06-03T02:14:09.147Z"}
+{"level":"warn","tag":"writer","message":"[warning] 连续了字: 检测到6句连续包含\"了\"字，节奏拖沓","timestamp":"2026-06-03T02:14:09.147Z"}
+{"level":"warn","tag":"writer","message":"[error] 章节号指称: 正文中出现了章节号指称：\"第11章\"。角色不知道自己在第几章。","timestamp":"2026-06-03T02:14:09.147Z"}
+{"level":"warn","tag":"writer","message":"AI 味检查：第11章发现 1 个问题","timestamp":"2026-06-03T02:14:09.147Z"}
+{"level":"warn","tag":"writer","message":"[warning] 连续短段: 连续出现7个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-03T02:14:09.147Z"}
+{"level":"warn","tag":"writer","message":"[warning] 公式化转折: 转折词重复使用：\"突然\"×3。同一转折模式≥3次暴露AI生成痕迹","timestamp":"2026-06-03T02:14:09.147Z"}
+{"level":"info","tag":"studio","message":"审计前字数归一化：第11章 4646 -> 3487","timestamp":"2026-06-03T02:14:30.394Z"}
+{"level":"info","tag":"studio","message":"阶段：审计草稿","timestamp":"2026-06-03T02:14:30.395Z"}
+{"level":"info","tag":"studio","message":"阶段：修复轮次 1/1（当前 90 分）","timestamp":"2026-06-03T02:14:57.275Z"}
+{"level":"warn","tag":"studio","message":"修复轮次 1 未净提升（90 → 82），退出循环","timestamp":"2026-06-03T02:16:07.125Z"}
+{"level":"info","tag":"studio","message":"[promotion] 4 hook(s) promoted after chapter 11","timestamp":"2026-06-03T02:16:07.134Z"}
+{"level":"info","tag":"studio","message":"阶段：落盘最终章节","timestamp":"2026-06-03T02:16:07.134Z"}
+{"level":"info","tag":"studio","message":"阶段：生成最终真相文件","timestamp":"2026-06-03T02:16:07.134Z"}
+{"level":"info","tag":"studio","message":"阶段：校验真相文件变更","timestamp":"2026-06-03T02:17:08.523Z"}
+{"level":"warn","tag":"studio","message":"[paragraph] 连续出现7个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-03T02:17:14.951Z"}
+{"level":"info","tag":"studio","message":"阶段：同步记忆索引","timestamp":"2026-06-03T02:17:14.958Z"}
+{"level":"info","tag":"studio","message":"阶段：更新章节索引与快照","timestamp":"2026-06-03T02:17:14.973Z"}
+{"level":"info","tag":"studio","message":"阶段：审计第11章","timestamp":"2026-06-03T02:30:21.372Z"}
+{"level":"info","tag":"studio","message":"阶段：加载第1章修订上下文","timestamp":"2026-06-03T02:33:06.848Z"}
+{"level":"info","tag":"studio","message":"阶段：修订第1章","timestamp":"2026-06-03T02:33:57.151Z"}
+{"level":"info","tag":"studio","message":"阶段：加载第6章修订上下文","timestamp":"2026-06-03T02:43:31.167Z"}
+{"level":"info","tag":"studio","message":"阶段：修订第6章","timestamp":"2026-06-03T02:44:24.285Z"}
+{"level":"info","tag":"studio","message":"审计前字数归一化：第6章 2003 -> 4077","timestamp":"2026-06-03T02:45:39.342Z"}
+{"level":"info","tag":"studio","message":"阶段：加载第1章修订上下文","timestamp":"2026-06-03T03:07:29.793Z"}
+{"level":"info","tag":"studio","message":"阶段：修订第1章","timestamp":"2026-06-03T03:07:59.514Z"}
+{"level":"info","tag":"studio","message":"阶段：落盘第1章修订结果","timestamp":"2026-06-03T03:08:58.859Z"}
+{"level":"info","tag":"studio","message":"阶段：更新第1章索引与快照","timestamp":"2026-06-03T03:08:58.862Z"}

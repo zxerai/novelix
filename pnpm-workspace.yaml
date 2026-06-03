@@ -1,0 +1,9 @@
+packages:
+  - "packages/*"
+overrides:
+  "@mariozechner/pi-ai": "0.67.1"
+  "@mariozechner/pi-agent-core": "0.67.1"
+allowBuilds:
+  esbuild: true
+  msw: true
+  protobufjs: true
