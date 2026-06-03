@@ -4,22 +4,22 @@
 
 不是没灵感，不是不知道怎么开头——是**写完 10 章之后，前面埋的伏笔忘了收，角色的实力忽高忽低，上章丢掉的武器下章又出现了**。
 
-我花了几个月做了一个叫 **JiaOS** 的东西，本质上是一个由 10 个 AI Agent 组成的"写小说流水线"。
+我花了几个月做了一个叫 **Novelix** 的东西，本质上是一个由 10 个 AI Agent 组成的"写小说流水线"。
 
 ## 它能做什么？
 
 ```bash
 # 装
-npm i -g @actalk/jiaos
+npm i -g @actalk/novelix
 
 # 创建一本书
-jiaos book create --title "吞天魔帝" --genre xuanhuan
+novelix book create --title "吞天魔帝" --genre xuanhuan
 
 # 写下一章 — 全自动：构思 → 写作 → 审计 → 修订
-jiaos write next 吞天魔帝
+novelix write next 吞天魔帝
 
 # 导出
-jiaos export 吞天魔帝 --format epub
+novelix export 吞天魔帝 --format epub
 ```
 
 你不用盯着它写。它自己会写、自己审、自己改。一章写完自动跑下一章，你可以关机走人，第二天回来看结果。
@@ -34,7 +34,7 @@ jiaos export 吞天魔帝 --format epub
 - 前面埋的伏笔再也没提过
 - "仿佛""不禁""宛如"高频重复，AI 味太重
 
-JiaOS 解决这些问题的方式不是"写更好的 prompt"，而是一个 **10 Agent 接力管线**：
+Novelix 解决这些问题的方式不是"写更好的 prompt"，而是一个 **10 Agent 接力管线**：
 
 | Agent | 干的事 |
 |-------|--------|
@@ -53,7 +53,7 @@ JiaOS 解决这些问题的方式不是"写更好的 prompt"，而是一个 **10
 
 ## 核心卖点：连续性
 
-JiaOS 每本书维护 **7 个真相文件**作为唯一事实来源：
+Novelix 每本书维护 **7 个真相文件**作为唯一事实来源：
 
 - `current_state.md` — 角色位置、关系、情感状态
 - `particle_ledger.md` — 每件物品的数量和位置
@@ -67,7 +67,7 @@ JiaOS 每本书维护 **7 个真相文件**作为唯一事实来源：
 
 ## 去 AI 味
 
-大模型写的文字很容易被朱雀、Originality.ai 这类工具检测出来。JiaOS 内置了一套反检测改写策略，涵盖了 **22 条具体规则**，包含：
+大模型写的文字很容易被朱雀、Originality.ai 这类工具检测出来。Novelix 内置了一套反检测改写策略，涵盖了 **22 条具体规则**，包含：
 
 - **句式变异**：长短句剧烈交替，不得连续 3 句以上同长度
 - **词汇替换**：消灭"仿佛、不禁、宛如、突然、忽然、瞬间、顿时"等 AI 高频词
@@ -77,12 +77,12 @@ JiaOS 每本书维护 **7 个真相文件**作为唯一事实来源：
 
 ```bash
 # 对已有章节执行反检测改写
-jiaos revise 吞天魔帝 3 --mode anti-detect
+novelix revise 吞天魔帝 3 --mode anti-detect
 ```
 
 ## 实测数据
 
-用 JiaOS 全自动跑了一本玄幻《吞天魔帝》：
+用 Novelix 全自动跑了一本玄幻《吞天魔帝》：
 
 - 31 章
 - 45 万字
@@ -92,10 +92,10 @@ jiaos revise 吞天魔帝 3 --mode anti-detect
 
 ## 不只是命令行
 
-如果你不习惯终端操作，JiaOS 也附带了一个 Web 工作台：
+如果你不习惯终端操作，Novelix 也附带了一个 Web 工作台：
 
 ```bash
-jiaos
+novelix
 # 打开 http://localhost:4567
 ```
 
@@ -112,25 +112,25 @@ jiaos
 
 ```bash
 # 安装
-npm i -g @actalk/jiaos
+npm i -g @actalk/novelix
 
 # 初始化项目
-jiaos init my-novel
+novelix init my-novel
 
 # 配模型（首次运行会自动引导）
-jiaos doctor
+novelix doctor
 
 # 创建一本书
-jiaos book create --title "我的第一本书" --genre xianxia
+novelix book create --title "我的第一本书" --genre xianxia
 
 # 全自动写
-jiaos write next 我的第一本书 --count 10
+novelix write next 我的第一本书 --count 10
 ```
 
 ## 开源 & 链接
 
-- **GitHub**: [github.com/zxerai/jiaos](https://github.com/zxerai/jiaos)
-- **安装**: `npm i -g @actalk/jiaos`
+- **GitHub**: [github.com/zxerai/novelix](https://github.com/zxerai/novelix)
+- **安装**: `npm i -g @actalk/novelix`
 - **许可**: AGPL-3.0
 
 如果觉得有意思，去 GitHub 点个 Star ⭐ 就是最大的支持。也欢迎提 Issue 和 PR。

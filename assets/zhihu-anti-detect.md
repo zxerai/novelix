@@ -119,12 +119,12 @@ AI 写东西有自己的"方言"：高频词固定、句式均匀、段落等长
 
 ## 这些规则的来源
 
-这些规则来自我写的一个开源项目 **JiaOS**——一个 10 Agent 协作的 AI 小说写作系统。Writer 内置了这些规则，Auditor 会逐条检查输出。被朱雀检测摁在地上摩擦了 N 次之后，逐步迭代出了这 22 条。
+这些规则来自我写的一个开源项目 **Novelix**——一个 10 Agent 协作的 AI 小说写作系统。Writer 内置了这些规则，Auditor 会逐条检查输出。被朱雀检测摁在地上摩擦了 N 次之后，逐步迭代出了这 22 条。
 
 如果你也在用 AI 辅助写作，建议把这 22 条贴在显示器边上。逐条自检后再发，过朱雀的几率会高很多。
 
 ---
 
-**GitHub**: [github.com/zxerai/jiaos](https://github.com/zxerai/jiaos)
+**GitHub**: [github.com/zxerai/novelix](https://github.com/zxerai/novelix)
 
 *写于 2026 年 6 月*
