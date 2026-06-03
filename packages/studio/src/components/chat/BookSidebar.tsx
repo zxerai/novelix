@@ -21,6 +21,7 @@ import { SummarySection } from "../sidebar/SummarySection";
 import { ChaptersSection } from "../sidebar/ChaptersSection";
 import { CharacterSection } from "../sidebar/CharacterSection";
 import { GraphSection } from "../sidebar/GraphSection";
+import { MindMapSection } from "../sidebar/MindMapSection";
 
 export interface BookSidebarProps {
   readonly bookId: string;
@@ -239,6 +240,7 @@ function PanelView({ bookId, theme: _theme, t, sse }: BookSidebarProps) {
       <ProgressSection sse={sse} />
       <ChaptersSection bookId={bookId} isZh={isZh} />
       <CharacterSection bookId={bookId} />
+      <MindMapSection bookId={bookId} />
       <GraphSection bookId={bookId} />
       <FoundationSection bookId={bookId} />
       <SummarySection bookId={bookId} />

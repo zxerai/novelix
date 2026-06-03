@@ -2050,6 +2050,97 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
   }
 
   /**
+   * Parse volume_map.md into structured volume data for the plot mind map.
+   */
+  function parseVolumeMap(raw: string): ReadonlyArray<{
+    readonly volume: number;
+    readonly title: string;
+    readonly range: string;
+    readonly chapters: string;
+    readonly theme: string;
+    readonly highlight: string;
+    readonly okrs: ReadonlyArray<string>;
+    readonly hooks: ReadonlyArray<string>;
+  }> {
+    const volumes: Array<{
+      volume: number;
+      title: string;
+      range: string;
+      chapters: string;
+      theme: string;
+      highlight: string;
+      okrs: string[];
+      hooks: string[];
+    }> = [];
+
+    const volSections = raw.split(/\n(?=第[一二三四五六七八九十]+卷["「])/);
+    for (const section of volSections) {
+      const titleMatch = section.match(
+        /第[一二三四五六七八九十]+卷["「]([^」"]+)[」"]/,
+      );
+      if (!titleMatch) continue;
+
+      const title = titleMatch[1];
+      const volNum = volumes.length + 1;
+      const rangeMatch = section.match(/约(\d+-\d+章)/);
+      const range = rangeMatch?.[1] ?? "";
+
+      const chapterMatch = section.match(/(\d+)章/);
+      const chapters = chapterMatch ? `${chapterMatch[1]}章` : "";
+
+      // Extract theme (first paragraph after the heading)
+      const themeLines = section
+        .split("\n")
+        .slice(1, 4)
+        .filter((l) => l.trim())
+        .map((l) => l.trim());
+      const theme =
+        (themeLines[0]?.replace(/^["「]/, "").slice(0, 80) ?? "") + "……";
+
+      // Extract highlight (satisfaction type)
+      const hlMatch = section.match(/情绪[：:]([^。\n]+)/);
+      const highlight = hlMatch?.[1]?.trim() ?? "";
+
+      // Extract OKRs
+      const okrs: string[] = [];
+      const okrSection = section.match(/KR\d[^]*?(?=\n##|$)/);
+      if (okrSection) {
+        const krMatches = okrSection[0].match(/- KR\d:[^\n]+/g);
+        if (krMatches) {
+          for (const kr of krMatches.slice(0, 3)) {
+            okrs.push(kr.replace(/^- KR\d:\s*/, "").slice(0, 120));
+          }
+        }
+      }
+
+      // Extract hooks
+      const hooks: string[] = [];
+      const hookSection = section.match(/前台钩子[^]*?(?=\n##|$)/);
+      if (hookSection) {
+        const hMatches = hookSection[0].match(/- [^\n]+/g);
+        if (hMatches) {
+          for (const h of hMatches.slice(0, 3)) {
+            hooks.push(h.replace(/^- /, "").slice(0, 120));
+          }
+        }
+      }
+
+      volumes.push({
+        volume: volNum,
+        title,
+        range,
+        chapters,
+        theme,
+        highlight,
+        okrs,
+        hooks,
+      });
+    }
+
+    return volumes;
+  }
+
+  /**
    * Parse character data into graph nodes/edges.
    *
    * Supports two formats:
@@ -2460,6 +2551,21 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
     }
   });
 
+  // --- Plot Mind Map ---
+
+  app.get("/api/v1/books/:id/plot-mindmap", async (c) => {
+    const id = c.req.param("id");
+    const bookDir = state.bookDir(id);
+    const vmPath = join(bookDir, "story", "outline", "volume_map.md");
+    try {
+      const content = await readFile(vmPath, "utf-8");
+      const volumes = parseVolumeMap(content);
+      return c.json({ volumes });
+    } catch {
+      return c.json({ volumes: [] });
+    }
+  });
+
   // --- Character Graph ---
 
   app.get("/api/v1/books/:id/character-graph", async (c) => {
@@ -2512,8 +2618,6 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
   });
 
   // --- Actions ---
-
-
 
   // Query current write/draft execution status for page-refresh recovery
   app.get("/api/v1/books/:id/write-status", (c) => {
