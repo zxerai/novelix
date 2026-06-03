@@ -2085,7 +2085,7 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
       if (!titleMatch) continue;
       const title = titleMatch[1];
       const volNum = volumes.length + 1;
-      const rangeMatch = line.match(/约(d+-d+章)/);
+      const rangeMatch = line.match(/约(\d+-\d+章)/);
       const range = rangeMatch?.[1] ?? "";
       const chapters = "100章";
       const themeStart = line.indexOf("主题是");
