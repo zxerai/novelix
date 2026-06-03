@@ -2076,7 +2076,7 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
     const volSections = raw.split(/\n(?=第[一二三四五六七八九十]+卷["「])/);
     for (const section of volSections) {
       const titleMatch = section.match(
-        /第[一二三四五六七八九十]+卷["「]([^」"]+)[」"]/,
+        /第[一二三四五六七八九十]+卷[““「]([^””」]+)[””」]/,
       );
       if (!titleMatch) continue;
 
@@ -2095,7 +2095,7 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
         .filter((l) => l.trim())
         .map((l) => l.trim());
       const theme =
-        (themeLines[0]?.replace(/^["「]/, "").slice(0, 80) ?? "") + "……";
+        (themeLines[0]?.replace(/^[“”「」]/, "").slice(0, 80) ?? "") + "……";
 
       // Extract highlight (satisfaction type)
       const hlMatch = section.match(/情绪[：:]([^。\n]+)/);
