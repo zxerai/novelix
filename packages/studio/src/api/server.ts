@@ -2658,6 +2658,36 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
         }
       }
 
+      // 3. Also scan chapter summaries for all appearing characters
+      const summaryPath = join(bookDir, "story", "chapter_summaries.md");
+      try {
+        const summaryContent = await readFile(summaryPath, "utf-8");
+        const rows = summaryContent
+          .split("\n")
+          .filter((l) => l.startsWith("|") && l.includes("|"));
+        for (const row of rows.slice(2)) {
+          const cols = row.split("|").map((c) => c.trim());
+          const charsCell = cols[3] ?? "";
+          // Split by comma or 、 and extract names (remove annotations in parentheses)
+          const names = charsCell
+            .split(/[,、]/)
+            .map((n) => n.replace(/[（(][^)）]*[)）]/g, "").trim())
+            .filter((n) => n.length >= 2 && !n.startsWith("第"));
+          for (const name of names) {
+            if (!allNodesMap.has(name)) {
+              allNodesMap.set(name, {
+                id: name,
+                name,
+                role: "mentioned",
+                color: "#bdc3c7",
+              });
+            }
+          }
+        }
+      } catch {
+        // summaries file doesn't exist, skip
+      }
+
       return c.json({
         nodes: [...allNodesMap.values()],
         edges: allEdges,
