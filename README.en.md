@@ -1,11 +1,11 @@
-# JiaOS — Autonomous Novel Writing AI Agent
+# Novelix — Autonomous Novel Writing AI Agent
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@actalk/jiaos"><img src="https://img.shields.io/npm/v/@actalk/jiaos.svg?color=cb3837&logo=npm" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/@actalk/novelix"><img src="https://img.shields.io/npm/v/@actalk/novelix.svg?color=cb3837&logo=npm" alt="npm version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg" alt="License: AGPL-3.0"></a>
-  <a href="https://github.com/zxerai/jiaos/stargazers"><img src="https://img.shields.io/github/stars/zxerai/jiaos?style=flat&logo=github&color=yellow" alt="GitHub stars"></a>
-  <a href="https://www.npmjs.com/package/@actalk/jiaos"><img src="https://img.shields.io/npm/dm/@actalk/jiaos?color=cb3837&logo=npm&label=downloads" alt="npm downloads"></a>
-  <a href="https://clawhub.ai/narcooo/jiaos"><img src="https://img.shields.io/badge/🦞%20ClawHub-Skill-FF6B35?labelColor=1a1a1a" alt="ClawHub Skill"></a>
+  <a href="https://github.com/zxerai/novelix/stargazers"><img src="https://img.shields.io/github/stars/zxerai/novelix?style=flat&logo=github&color=yellow" alt="GitHub stars"></a>
+  <a href="https://www.npmjs.com/package/@actalk/novelix"><img src="https://img.shields.io/npm/dm/@actalk/novelix?color=cb3837&logo=npm&label=downloads" alt="npm downloads"></a>
+  <a href="https://clawhub.ai/narcooo/novelix"><img src="https://img.shields.io/badge/🦞%20ClawHub-Skill-FF6B35?labelColor=1a1a1a" alt="ClawHub Skill"></a>
 </p>
 
 <p align="center">
@@ -32,22 +32,22 @@
 
 ```bash
 # 1. Install
-npm i -g @actalk/jiaos
+npm i -g @actalk/novelix
 
 # 2. Initialize project
-jiaos init my-novel
+novelix init my-novel
 
 # 3. Check config
-jiaos doctor
+novelix doctor
 
 # 4. Create a book → start writing
-jiaos book create --title "The Last Delver" --genre litrpg
-jiaos write next my-book --count 10
+novelix book create --title "The Last Delver" --genre litrpg
+novelix write next my-book --count 10
 ```
 
-Launch Studio web workbench (`jiaos` → `http://localhost:4567`) for visual book management, chapter review, and analytics.
+Launch Studio web workbench (`novelix` → `http://localhost:4567`) for visual book management, chapter review, and analytics.
 
-> **🎯 3-minute setup**: Install → `jiaos init` → `jiaos doctor` → Write
+> **🎯 3-minute setup**: Install → `novelix init` → `novelix doctor` → Write
 
 ---
 
@@ -66,13 +66,13 @@ Every draft is checked against 7 canonical truth files across 33 dimensions: cha
 Studio Analytics page: audit pass rate gauge, top issue categories, token usage trends. Book Detail: per-chapter word count bar chart. Knowledge Graph: force-directed character relationship graph (60fps, draggable, zoomable).
 
 ### 🎭 Style Cloning
-`jiaos style analyze` extracts statistical fingerprint (sentence length, word frequency, rhythm) from reference text. `jiaos style import` injects it into a book — all future chapters adopt the style.
+`novelix style analyze` extracts statistical fingerprint (sentence length, word frequency, rhythm) from reference text. `novelix style import` injects it into a book — all future chapters adopt the style.
 
 ### 📝 Creative Brief
-`jiaos book create --brief my-ideas.md` passes your notes and worldbuilding to the Architect agent, which builds from your ideas instead of inventing from scratch.
+`novelix book create --brief my-ideas.md` passes your notes and worldbuilding to the Architect agent, which builds from your ideas instead of inventing from scratch.
 
 ### 🔄 Continuation + Fanfic
-`jiaos import chapters` imports existing novel text, reverse-engineers 7 truth files, and seamlessly continues. `jiaos fanfic init` creates fanfic books (canon/au/ooc/cp modes).
+`novelix import chapters` imports existing novel text, reverse-engineers 7 truth files, and seamlessly continues. `novelix fanfic init` creates fanfic books (canon/au/ooc/cp modes).
 
 ### 🎛️ Multi-Model Routing
 Different agents can use different models: Writer on Claude (stronger creative), Auditor on GPT-4o (cheaper and fast), Radar on a local model (zero cost).
@@ -83,25 +83,25 @@ Different agents can use different models: Writer on Claude (stronger creative),
 
 ### Studio Setup (recommended)
 ```bash
-jiaos init my-novel && cd my-novel && jiaos
+novelix init my-novel && cd my-novel && novelix
 ```
 Open Studio → "Model Config" → Select provider → Paste API key → Test → Save.
 
 ### CLI / Environment Config
 ```bash
-jiaos config set-global --provider openai --base-url <url> --api-key <key> --model <model>
+novelix config set-global --provider openai --base-url <url> --api-key <key> --model <model>
 ```
-Or write `.env` with `JIAOS_LLM_BASE_URL` + `JIAOS_LLM_API_KEY` + `JIAOS_LLM_MODEL`.
+Or write `.env` with `NOVELIX_LLM_BASE_URL` + `NOVELIX_LLM_API_KEY` + `NOVELIX_LLM_MODEL`.
 
 ### Multi-Model Routing
 ```bash
-jiaos config set-model writer <model> --provider <provider>
-jiaos config show-models
+novelix config set-model writer <model> --provider <provider>
+novelix config show-models
 ```
 
 ### Diagnostics
 ```bash
-jiaos doctor      # Check config and API connectivity
+novelix doctor      # Check config and API connectivity
 ```
 
 ### English Genre Profiles
@@ -163,8 +163,8 @@ On Node 22+, a SQLite temporal memory database (`story/memory.db`) enables relev
 - `story/runtime/chapter-XXXX.intent.md` — chapter-specific goals
 
 ```bash
-jiaos plan chapter my-book --context "Focus on the mentor conflict"
-jiaos compose chapter my-book
+novelix plan chapter my-book --context "Focus on the mentor conflict"
+novelix compose chapter my-book
 ```
 
 ---
@@ -173,23 +173,23 @@ jiaos compose chapter my-book
 
 ### 1. Full Pipeline (One Command)
 ```bash
-jiaos write next my-book              # Draft → audit → auto-revise
-jiaos write next my-book --count 5    # 5 chapters in sequence
+novelix write next my-book              # Draft → audit → auto-revise
+novelix write next my-book --count 5    # 5 chapters in sequence
 ```
 
 ### 2. Atomic Commands (Composable)
 ```bash
-jiaos plan chapter my-book --context "Mentor conflict" --json
-jiaos compose chapter my-book --json
-jiaos draft my-book --json
-jiaos audit my-book 31 --json
-jiaos revise my-book 31 --json
+novelix plan chapter my-book --context "Mentor conflict" --json
+novelix compose chapter my-book --json
+novelix draft my-book --json
+novelix audit my-book 31 --json
+novelix revise my-book 31 --json
 ```
 
 ### 3. Natural Language Agent Mode
 ```bash
-jiaos agent "Write a LitRPG novel where the MC is a healer in a dungeon world"
-jiaos agent "Write the next chapter, focus on the boss fight"
+novelix agent "Write a LitRPG novel where the MC is a healer in a dungeon world"
+novelix agent "Write the next chapter, focus on the boss fight"
 ```
 
 18 built-in tools with LLM tool-use for call ordering.
@@ -200,28 +200,28 @@ jiaos agent "Write the next chapter, focus on the boss fight"
 
 | Command | Description |
 |---------|-------------|
-| `jiaos init [name]` | Initialize project |
-| `jiaos book create` | Create a book (`--genre`, `--brief <file>`) |
-| `jiaos book list` | List all books |
-| `jiaos book delete <id>` | Delete a book |
-| `jiaos write next [id]` | Full pipeline: draft → audit → revise (`--count`, `--words`) |
-| `jiaos write rewrite [id] <n>` | Rewrite chapter N |
-| `jiaos draft [id]` | Write draft only |
-| `jiaos audit [id] [n]` | Audit a chapter |
-| `jiaos revise [id] [n]` | Revise (`--mode anti-detect`) |
-| `jiaos agent <instruction>` | Natural language agent mode |
-| `jiaos review list/approve-all [id]` | Review drafts |
-| `jiaos status [id]` | Project status |
-| `jiaos export [id]` | Export (`--format txt/md/epub`) |
-| `jiaos short run` | Write short fiction |
-| `jiaos fanfic init` | Create fanfic book |
-| `jiaos config set-model <agent> <model>` | Multi-model routing |
-| `jiaos doctor` | Diagnose setup |
-| `jiaos detect [id] [n]` | AIGC detection |
-| `jiaos style analyze/import` | Style cloning |
-| `jiaos import chapters [id]` | Import for continuation |
-| `jiaos studio` / `jiaos` | Web workbench |
-| `jiaos up / down` | Daemon control |
+| `novelix init [name]` | Initialize project |
+| `novelix book create` | Create a book (`--genre`, `--brief <file>`) |
+| `novelix book list` | List all books |
+| `novelix book delete <id>` | Delete a book |
+| `novelix write next [id]` | Full pipeline: draft → audit → revise (`--count`, `--words`) |
+| `novelix write rewrite [id] <n>` | Rewrite chapter N |
+| `novelix draft [id]` | Write draft only |
+| `novelix audit [id] [n]` | Audit a chapter |
+| `novelix revise [id] [n]` | Revise (`--mode anti-detect`) |
+| `novelix agent <instruction>` | Natural language agent mode |
+| `novelix review list/approve-all [id]` | Review drafts |
+| `novelix status [id]` | Project status |
+| `novelix export [id]` | Export (`--format txt/md/epub`) |
+| `novelix short run` | Write short fiction |
+| `novelix fanfic init` | Create fanfic book |
+| `novelix config set-model <agent> <model>` | Multi-model routing |
+| `novelix doctor` | Diagnose setup |
+| `novelix detect [id] [n]` | AIGC detection |
+| `novelix style analyze/import` | Style cloning |
+| `novelix import chapters [id]` | Import for continuation |
+| `novelix studio` / `novelix` | Web workbench |
+| `novelix up / down` | Daemon control |
 
 `[id]` auto-detected for single-book projects. All commands support `--json`.
 
