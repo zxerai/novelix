@@ -3012,7 +3012,10 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
     }
     const secrets = await loadSecrets(root);
     return c.json({
-      apiKey: secrets.services[coverSecretKey(service)]?.apiKey ?? "",
+      apiKey: (() => {
+        const key = secrets.services[coverSecretKey(service)]?.apiKey ?? "";
+        return key.length > 12 ? key.slice(0, 4) + "..." + key.slice(-4) : key.length > 0 ? "***" : "";
+      })(),
     });
   });
 

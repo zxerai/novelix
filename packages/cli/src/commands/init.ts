@@ -34,7 +34,8 @@ export const initCommand = new Command("init")
       const exampleCreate = isEnglish
         ? "  novelix book create --title 'My Novel' --genre progression --platform royalroad --lang en"
         : "  novelix book create --title '我的小说' --genre xuanhuan --platform tomato";
-      if (global) {
+      const globalConfigured = await hasGlobalConfig();
+      if (globalConfigured) {
         log("Global LLM config detected. Ready to go!");
         log("");
         log("Next steps:");
@@ -53,7 +54,7 @@ export const initCommand = new Command("init")
       }
       log("  novelix write next <book-id>");
     } catch (e) {
-      logError(`Failed to initialize project: ${e}`);
+      logError(`Failed to initialize project: ${e instanceof Error ? e.message : String(e)}`);
       process.exit(1);
     }
   });
