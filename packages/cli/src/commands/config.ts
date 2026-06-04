@@ -93,6 +93,11 @@ configCommand
       let target = config;
       for (let i = 0; i < keys.length - 1; i++) {
         const k = keys[i]!;
+        // Guard against prototype pollution
+        if (k === "__proto__" || k === "constructor" || k === "prototype") {
+          logError(`Invalid config key segment: "${k}"`);
+          process.exit(1);
+        }
         if (!(k in target)) {
           target[k] = {};
         }
@@ -172,7 +177,7 @@ configCommand
     try {
       const content = await readFile(GLOBAL_ENV_PATH, "utf-8");
       const masked = content.replace(
-        /(NOVELIX_LLM_API_KEY=)(.{8})(.*)(.{4})/,
+        /(NOVELIX_LLM_API_KEY=)(.{4})(.*)(.{4})/,
         "$1$2...$4",
       );
       log(masked);
@@ -196,7 +201,7 @@ configCommand
       // Mask API key
       if (config.llm?.apiKey) {
         const key = config.llm.apiKey;
-        config.llm.apiKey = key.slice(0, 8) + "..." + key.slice(-4);
+        config.llm.apiKey = key.length > 12 ? key.slice(0, 4) + "..." + key.slice(-4) : "***";
       }
       log(JSON.stringify(config, null, 2));
     } catch (e) {

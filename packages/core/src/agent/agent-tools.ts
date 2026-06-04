@@ -732,7 +732,16 @@ export function createGrepTool(projectRoot: string): AgentTool<typeof GrepParams
     ): Promise<AgentToolResult<undefined>> {
       try {
         const bookDir = safeBooksPath(booksRoot, params.bookId);
-        const regex = new RegExp(params.pattern, "gi");
+        let regex: RegExp;
+        try {
+          regex = new RegExp(params.pattern, "gi");
+        } catch {
+          return textResult(`Invalid grep pattern: ${params.pattern}`);
+        }
+        // Reject patterns with nested quantifiers that risk catastrophic backtracking
+        if (/\([^)]*[+*][^)]*\)[+*]/.test(params.pattern)) {
+          return textResult(`Grep pattern may cause catastrophic backtracking: ${params.pattern}`);
+        }
         const results: string[] = [];
 
         async function searchDir(dir: string, prefix: string) {

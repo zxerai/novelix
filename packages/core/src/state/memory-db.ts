@@ -125,6 +125,15 @@ export class MemoryDB {
   }
 
   private ensureColumn(table: string, column: string, definition: string): void {
+    // Validate identifiers to prevent SQL injection — only allow alphanumeric + underscore
+    const safeIdent = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    if (!safeIdent.test(table) || !safeIdent.test(column)) {
+      throw new Error(`Invalid SQL identifier: table="${table}", column="${column}"`);
+    }
+    // Definition is always from hardcoded call sites; validate it starts with a type keyword
+    if (!/^(TEXT|INTEGER|REAL|BLOB|NUMERIC)/i.test(definition.trim())) {
+      throw new Error(`Unexpected column definition: ${definition}`);
+    }
     try {
       this.db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
     } catch {
@@ -264,7 +273,7 @@ export class MemoryDB {
   getSummariesByCharacters(names: ReadonlyArray<string>): ReadonlyArray<StoredSummary> {
     if (names.length === 0) return [];
     const conditions = names.map(() => "characters LIKE ?").join(" OR ");
-    const params = names.map((n) => `%${n}%`);
+    const params = names.map((n) => `%${n.replace(/[%_]/g, "\$&")}%`);
     return this.db.prepare(
       `SELECT
          chapter,

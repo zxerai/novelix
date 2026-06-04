@@ -1598,7 +1598,23 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
   const state = new StateManager(root);
   let cachedConfig = initialConfig;
 
-  app.use("/*", cors());
+  app.use("/*", cors({
+    origin: (origin) => {
+      // Allow requests with no origin (e.g., same-origin, curl, mobile apps)
+      if (!origin) return origin;
+      // Only allow localhost origins
+      if (/^https?:\/\/localhost(?::\d+)?$/.test(origin)) return origin;
+      return null;
+    },
+  }));
+
+  // Security headers
+  app.use("/*", async (c, next) => {
+    await next();
+    c.header("X-Content-Type-Options", "nosniff");
+    c.header("X-Frame-Options", "DENY");
+    c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  });
 
   // Structured error handler — ApiError returns typed JSON, others return 500
   app.onError((error, c) => {
@@ -3163,9 +3179,14 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
   app.get("/api/v1/services/:service/secret", async (c) => {
     const service = c.req.param("service");
     const secrets = await loadSecrets(root);
-    return c.json({
-      apiKey: secrets.services[service]?.apiKey ?? "",
-    });
+    const key = secrets.services[service]?.apiKey ?? "";
+    // Mask the API key — only show first 4 and last 4 characters
+    const masked = key.length > 12
+      ? key.slice(0, 4) + "..." + key.slice(-4)
+      : key.length > 0
+        ? "***"
+        : "";
+    return c.json({ apiKey: masked });
   });
 
   app.get("/api/v1/services/models", async (c) => {
@@ -3253,7 +3274,7 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
     if (!apiKey && !apiKeyOptional) return c.json({ models: [] });
 
     // Cache by service + resolved baseUrl + apiKey fingerprint; valid for 10 min unless ?refresh=1
-    const cacheKey = `${service}::${resolvedBaseUrl ?? ""}::${apiKey.slice(-8)}`;
+    const cacheKey = `${service}::${resolvedBaseUrl ?? ""}::${apiKey.length}`;
     if (!refresh) {
       const cached = modelListCache.get(cacheKey);
       if (cached && Date.now() - cached.at < 10 * 60 * 1000) {
@@ -5274,7 +5295,12 @@ export async function startStudioServer(
   if (options?.staticDir) {
     // Serve static assets (js, css, etc.)
     app.get("/assets/*", async (c) => {
-      const filePath = join(options.staticDir!, c.req.path);
+      const filePath = resolve(options.staticDir!, c.req.path.replace(/^\/assets\//, ""));
+      // Guard against path traversal
+      const rel = relative(options.staticDir!, filePath);
+      if (rel.startsWith("..") || isAbsolute(rel)) {
+        return c.notFound();
+      }
       try {
         const content = await readFile(filePath);
         const ext = filePath.split(".").pop() ?? "";

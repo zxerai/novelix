@@ -2,7 +2,10 @@ import { Command } from "commander";
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { log, logError } from "../utils.js";
-import { initializeProjectDirectory } from "../project-bootstrap.js";
+import {
+  initializeProjectDirectory,
+  hasGlobalConfig,
+} from "../project-bootstrap.js";
 
 export const initCommand = new Command("init")
   .description("Initialize an Novelix project (current directory by default)")

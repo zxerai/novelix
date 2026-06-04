@@ -1,5 +1,5 @@
 import { readFile, writeFile, mkdir, readdir, rm, stat, unlink, open } from "node:fs/promises";
-import { join } from "node:path";
+import { isAbsolute, join, relative } from "node:path";
 import type { BookConfig } from "../models/book.js";
 import type { ChapterMeta } from "../models/chapter.js";
 import { bootstrapStructuredStateFromMarkdown, resolveDurableStoryProgress } from "./state-bootstrap.js";
@@ -165,7 +165,13 @@ export class StateManager {
   }
 
   bookDir(bookId: string): string {
-    return join(this.booksDir, bookId);
+    const dir = join(this.booksDir, bookId);
+    // Guard against path traversal
+    const rel = relative(this.booksDir, dir);
+    if (rel.startsWith("..") || isAbsolute(rel)) {
+      throw new Error(`Invalid bookId (path traversal): "${bookId}"`);
+    }
+    return dir;
   }
 
   stateDir(bookId: string): string {

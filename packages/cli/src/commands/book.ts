@@ -75,8 +75,8 @@ bookCommand
         platform: normalizePlatformOrOther(opts.platform),
         genre: opts.genre,
         status: "outlining",
-        targetChapters: parseInt(opts.targetChapters, 10),
-        chapterWordCount: parseInt(opts.chapterWords, 10),
+        targetChapters: parseInt(opts.targetChapters, 10) || 200,
+        chapterWordCount: parseInt(opts.chapterWords, 10) || 3000,
         language: opts.lang ?? config.language,
         createdAt: now,
         updatedAt: now,
@@ -156,9 +156,9 @@ bookCommand
 
       const updates: Record<string, unknown> = {};
       if (opts.chapterWords)
-        updates.chapterWordCount = parseInt(opts.chapterWords, 10);
+        updates.chapterWordCount = parseInt(opts.chapterWords, 10) || undefined;
       if (opts.targetChapters)
-        updates.targetChapters = parseInt(opts.targetChapters, 10);
+        updates.targetChapters = parseInt(opts.targetChapters, 10) || undefined;
       if (opts.status) updates.status = opts.status;
       if (opts.lang) updates.language = opts.lang;
 

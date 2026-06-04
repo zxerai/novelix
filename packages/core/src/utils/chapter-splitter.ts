@@ -20,7 +20,20 @@ export function splitChapters(
   pattern?: string,
 ): ReadonlyArray<SplitChapter> {
   const defaultPattern = /^#{0,2}\s*(?:第[零〇○Ｏ０一二三四五六七八九十百千万\d]+(?:章|回)(?:[:：]|\s+)?\s*(.*)|Chapter\s+(?:\d+|[IVXLCDM]+)(?:\.|:|\s+)?\s*(.*))/i;
-  const regex = pattern ? new RegExp(pattern, "m") : defaultPattern;
+  let regex: RegExp;
+  if (pattern) {
+    try {
+      regex = new RegExp(pattern, "m");
+    } catch {
+      throw new Error(`Invalid regex pattern: ${pattern}`);
+    }
+    // Reject patterns with nested quantifiers that risk catastrophic backtracking
+    if (/\([^)]*[+*][^)]*\)[+*]/.test(pattern)) {
+      throw new Error(`Regex pattern may cause catastrophic backtracking: ${pattern}`);
+    }
+  } else {
+    regex = defaultPattern;
+  }
 
   const lines = text.split("\n");
   const chapters: Array<{ title: string; startLine: number }> = [];

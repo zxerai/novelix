@@ -9,6 +9,12 @@ import { analyzeChapterCadence } from "../utils/chapter-cadence.js";
 import type { BookRules } from "../models/book-rules.js";
 import type { GenreProfile } from "../models/genre-profile.js";
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+
+
 export interface PostWriteViolation {
   readonly rule: string;
   readonly severity: "error" | "warning" | "info";
@@ -135,7 +141,7 @@ export function validatePostWrite(
   const markerCounts: Record<string, number> = {};
   let totalMarkerCount = 0;
   for (const word of SURPRISE_MARKERS) {
-    const matches = content.match(new RegExp(word, "g"));
+    const matches = content.match(new RegExp(escapeRegExp(word), "g"));
     const count = matches?.length ?? 0;
     if (count > 0) {
       markerCounts[word] = count;

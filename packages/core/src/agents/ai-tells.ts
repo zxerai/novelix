@@ -21,6 +21,11 @@ export interface AITellResult {
 
 type AITellLanguage = "zh" | "en";
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+
 const HEDGE_WORDS: Record<AITellLanguage, ReadonlyArray<string>> = {
   zh: [
     "似乎",
@@ -185,7 +190,7 @@ export function analyzeAITells(
   if (totalChars > 0) {
     let hedgeCount = 0;
     for (const word of HEDGE_WORDS[language]) {
-      const regex = new RegExp(word, isEnglish ? "gi" : "g");
+      const regex = new RegExp(escapeRegExp(word), isEnglish ? "gi" : "g");
       const matches = content.match(regex);
       hedgeCount += matches?.length ?? 0;
     }

@@ -1893,7 +1893,7 @@ describe("createStudioServer daemon lifecycle", () => {
 
     const response = await app.request("http://localhost/api/v1/services/moonshot/secret");
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ apiKey: "sk-moon" });
+    await expect(response.json()).resolves.toEqual({ apiKey: "***" });
   });
 
   it("rejects non-header-safe service secrets instead of persisting diagnostic text", async () => {

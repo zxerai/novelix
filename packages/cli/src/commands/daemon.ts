@@ -41,8 +41,14 @@ export const upCommand = new Command("up")
       log(`  Max concurrent books: ${config.daemon.maxConcurrentBooks}`);
       log("");
 
-      // Write PID file
-      await writeFile(pidPath, String(process.pid), "utf-8");
+      // Write PID file with exclusive flag to prevent race condition
+      const { open } = await import("node:fs/promises");
+      const pidHandle = await open(pidPath, "wx");
+      try {
+        await pidHandle.writeFile(String(process.pid), "utf-8");
+      } finally {
+        await pidHandle.close();
+      }
 
       // File logging for daemon
       const logPath = join(root, "novelix.log");

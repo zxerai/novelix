@@ -4,6 +4,12 @@ import { join } from "node:path";
 const readFileMock = vi.fn();
 const writeFileMock = vi.fn();
 const unlinkMock = vi.fn();
+const handleWriteFileMock = vi.fn();
+const handleCloseMock = vi.fn();
+const openMock = vi.fn(async () => ({
+  writeFile: handleWriteFileMock,
+  close: handleCloseMock,
+}));
 const endMock = vi.fn();
 const createWriteStreamMock = vi.fn(() => ({ end: endMock }));
 const schedulerStartMock = vi.fn();
@@ -15,6 +21,7 @@ vi.mock("node:fs/promises", () => ({
   readFile: readFileMock,
   writeFile: writeFileMock,
   unlink: unlinkMock,
+  open: openMock,
 }));
 
 vi.mock("node:fs", () => ({
@@ -89,11 +96,12 @@ describe("daemon command", () => {
     ).rejects.toMatchObject({ code: 1 });
 
     const pidPath = join("/project", "novelix.pid");
-    expect(writeFileMock).toHaveBeenCalledWith(
-      pidPath,
+    expect(openMock).toHaveBeenCalledWith(pidPath, "wx");
+    expect(handleWriteFileMock).toHaveBeenCalledWith(
       expect.any(String),
       "utf-8",
     );
+    expect(handleCloseMock).toHaveBeenCalled();
     expect(unlinkMock).toHaveBeenCalledWith(pidPath);
 
     exitSpy.mockRestore();

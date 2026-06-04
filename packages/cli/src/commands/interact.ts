@@ -71,39 +71,45 @@ export function createInteractCommand(hooks: InteractCommandHooks = {}): Command
     .option("--book <bookId>", "Bind a specific active book for this interaction")
     .option("--json", "Emit structured JSON for external agents")
     .action(async (messageArgs: ReadonlyArray<string>, opts) => {
-      const input = await readInteractionInput(messageArgs, opts.message, hooks.readInput);
-      const projectRoot = process.cwd();
-      const tools = hooks.createTools
-        ? await hooks.createTools(projectRoot)
-        : hooks.runInteraction
-          ? ({} as InteractionRuntimeTools)
-          : await createInteractionTools(projectRoot, undefined, { requireApiKey: false });
-      const runInteraction = hooks.runInteraction ?? processProjectInteractionInput;
-      const result = await runInteraction({
-        projectRoot,
-        input,
-        activeBookId: opts.book,
-        tools,
-      });
+      try {
+        const input = await readInteractionInput(messageArgs, opts.message, hooks.readInput);
+        const projectRoot = process.cwd();
+        const tools = hooks.createTools
+          ? await hooks.createTools(projectRoot)
+          : hooks.runInteraction
+            ? ({} as Partial<InteractionRuntimeTools>)
+            : await createInteractionTools(projectRoot, undefined, { requireApiKey: false });
+        const runInteraction = hooks.runInteraction ?? processProjectInteractionInput;
+        const result = await runInteraction({
+          projectRoot,
+          input,
+          activeBookId: opts.book,
+          tools: tools as InteractionRuntimeTools,
+        });
 
-      if (opts.json) {
-        process.stdout.write(`${JSON.stringify({
-          request: result.request,
-          responseText: result.responseText,
-          session: result.session,
-          currentExecution: result.session.currentExecution ?? null,
-          pendingDecision: result.session.pendingDecision ?? null,
-          events: result.session.events,
-        }, null, 2)}\n`);
-        return;
-      }
+        if (opts.json) {
+          process.stdout.write(`${JSON.stringify({
+            request: result.request,
+            responseText: result.responseText,
+            session: result.session,
+            currentExecution: result.session.currentExecution ?? null,
+            pendingDecision: result.session.pendingDecision ?? null,
+            events: result.session.events,
+          }, null, 2)}\n`);
+          return;
+        }
 
-      const text = result.responseText
-        ?? (result.session.messages.at(-1) && "content" in (result.session.messages.at(-1) as Record<string, unknown>)
-          ? String((result.session.messages.at(-1) as Record<string, unknown>).content)
-          : "");
-      if (text) {
-        process.stdout.write(`${text}\n`);
+        const text = result.responseText
+          ?? (result.session.messages.at(-1) && "content" in (result.session.messages.at(-1) as Record<string, unknown>)
+            ? String((result.session.messages.at(-1) as Record<string, unknown>).content)
+            : "");
+        if (text) {
+          process.stdout.write(`${text}\n`);
+        }
+      } catch (e) {
+        const { logError } = await import("../utils.js");
+        logError(`Interaction failed: ${e instanceof Error ? e.message : String(e)}`);
+        process.exit(1);
       }
     });
 }
