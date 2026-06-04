@@ -6,7 +6,7 @@ import type { InteractionSession } from "@actalk/novelix-core";
 function createSession(): InteractionSession {
   return {
     sessionId: "session-1",
-    projectRoot: "/tmp/jiaos-demo",
+    projectRoot: "/tmp/novelix-demo",
     activeBookId: "harbor",
     activeChapterNumber: 12,
     automationMode: "semi",
@@ -47,7 +47,7 @@ describe("ink dashboard", () => {
     const { lastFrame } = render(
       <mod.InkTuiDashboard
         locale="en"
-        projectName="jiaos-demo"
+        projectName="novelix-demo"
         activeBookTitle="Night Harbor Echo"
         modelLabel="gpt-5.4 (openai)"
         session={createSession()}
@@ -57,7 +57,7 @@ describe("ink dashboard", () => {
     );
 
     const frame = lastFrame() ?? "";
-    expect(frame).toContain("jiaos-demo");
+    expect(frame).toContain("novelix-demo");
     expect(frame).toContain("Night Harbor Echo");
     expect(frame).toContain("gpt-5.4 (openai)");
     expect(frame).toContain("writing chapter");
@@ -76,7 +76,7 @@ describe("ink dashboard", () => {
     const { lastFrame } = render(
       <mod.InkTuiDashboard
         locale="en"
-        projectName="jiaos-demo"
+        projectName="novelix-demo"
         activeBookTitle="Night Harbor Echo"
         modelLabel="gpt-5.4 (openai)"
         session={createSession()}
@@ -96,7 +96,7 @@ describe("ink dashboard", () => {
     const { lastFrame } = render(
       <mod.InkTuiDashboard
         locale="en"
-        projectName="jiaos-demo"
+        projectName="novelix-demo"
         activeBookTitle="Night Harbor Echo"
         modelLabel="gpt-5.4 (openai)"
         session={createSession()}
@@ -116,7 +116,7 @@ describe("ink dashboard", () => {
     const { lastFrame } = render(
       <mod.InkTuiDashboard
         locale="en"
-        projectName="jiaos-demo"
+        projectName="novelix-demo"
         activeBookTitle="Night Harbor Echo"
         modelLabel="gpt-5.4 (openai)"
         session={createSession()}
@@ -139,7 +139,7 @@ describe("ink dashboard", () => {
     const { lastFrame } = render(
       <mod.InkTuiDashboard
         locale="en"
-        projectName="jiaos-demo"
+        projectName="novelix-demo"
         activeBookTitle="Night Harbor Echo"
         modelLabel="gpt-5.4 (openai)"
         session={createSession()}
@@ -160,7 +160,7 @@ describe("ink dashboard", () => {
     const { lastFrame } = render(
       <mod.InkTuiDashboard
         locale="zh-CN"
-        projectName="jiaos-demo"
+        projectName="novelix-demo"
         activeBookTitle="夜港回声"
         modelLabel="gpt-5.4 (openai)"
         session={createSession()}
@@ -170,7 +170,7 @@ describe("ink dashboard", () => {
     );
 
     const frame = lastFrame() ?? "";
-    expect(frame).toContain("项目 jiaos-demo");
+    expect(frame).toContain("项目 novelix-demo");
     expect(frame).toContain("作品 夜港回声");
     expect(frame).toContain("深度 标准");
     expect(frame).toContain("项目");
@@ -197,7 +197,11 @@ describe("ink dashboard", () => {
       },
       messages: [
         { role: "user", content: "我想写个港风商战悬疑。", timestamp: 1 },
-        { role: "assistant", content: "先把这本书的大概方向收住。", timestamp: 2 },
+        {
+          role: "assistant",
+          content: "先把这本书的大概方向收住。",
+          timestamp: 2,
+        },
       ],
       events: [],
     };
@@ -205,7 +209,7 @@ describe("ink dashboard", () => {
     const { lastFrame } = render(
       <mod.InkTuiDashboard
         locale="zh-CN"
-        projectName="jiaos-demo"
+        projectName="novelix-demo"
         modelLabel="gpt-5.4 (openai)"
         session={draftSession}
         inputValue=""

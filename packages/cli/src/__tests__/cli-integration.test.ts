@@ -25,7 +25,7 @@ function buildTestEnv(overrides?: Record<string, string>) {
   const baseEnv = Object.fromEntries(
     Object.entries(process.env).filter(
       ([key]) =>
-        !key.startsWith("JIAOS_") &&
+        !key.startsWith("NOVELIX_") &&
         !key.startsWith("OPENAI_") &&
         !key.startsWith("ANTHROPIC_") &&
         key !== "TAVILY_API_KEY",
@@ -90,14 +90,14 @@ describe("CLI integration", () => {
     await rm(projectDir, { recursive: true, force: true });
   });
 
-  describe("jiaos --version", () => {
+  describe("novelix --version", () => {
     it("prints version number", () => {
       const output = run(["--version"]);
       expect(output.trim()).toMatch(/^\d+\.\d+\.\d+$/);
     });
   });
 
-  describe("jiaos --help", () => {
+  describe("novelix --help", () => {
     it("prints help with command list", () => {
       const output = run(["--help"]);
       expect(output).toContain("novelix");
@@ -107,7 +107,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos init", () => {
+  describe("novelix init", () => {
     it("initializes project in current directory", () => {
       const output = run(["init"]);
       expect(output).toContain("Project initialized");
@@ -150,7 +150,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos init <name>", () => {
+  describe("novelix init <name>", () => {
     it("creates project in subdirectory", () => {
       const output = run(["init", "subproject"]);
       expect(output).toContain("Project initialized");
@@ -196,7 +196,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos config set", () => {
+  describe("novelix config set", () => {
     it("sets a known config value", () => {
       const output = run(["config", "set", "llm.provider", "anthropic"]);
       expect(output).toContain("Set llm.provider = anthropic");
@@ -234,7 +234,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos config show", () => {
+  describe("novelix config show", () => {
     it("shows current config as JSON", () => {
       const output = run(["config", "show"]);
       const config = JSON.parse(output);
@@ -242,7 +242,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos interact", () => {
+  describe("novelix interact", () => {
     it("returns structured JSON for shared interaction mode switches", async () => {
       const initialized = await stat(join(projectDir, "novelix.json"))
         .then(() => true)
@@ -321,7 +321,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos config set-model", () => {
+  describe("novelix config set-model", () => {
     it("rejects raw API keys passed to --api-key-env", async () => {
       const { exitCode, stderr } = runStderr([
         "config",
@@ -347,7 +347,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos book list", () => {
+  describe("novelix book list", () => {
     it("shows no books in empty project", () => {
       const output = run(["book", "list"]);
       expect(output).toContain("No books found");
@@ -360,7 +360,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos book create", () => {
+  describe("novelix book create", () => {
     it("removes stale incomplete book directories before retrying create", async () => {
       try {
         await stat(join(projectDir, "novelix.json"));
@@ -400,7 +400,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos status", () => {
+  describe("novelix status", () => {
     it("shows project status with zero books", () => {
       const output = run(["status"]);
       expect(output).toContain("Books: 0");
@@ -676,7 +676,7 @@ describe("CLI integration", () => {
     );
   });
 
-  describe("jiaos doctor", () => {
+  describe("novelix doctor", () => {
     it("checks environment health", () => {
       const { stdout } = runStderr(["doctor"]);
       expect(stdout).toContain("Novelix Doctor");
@@ -792,7 +792,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos write", () => {
+  describe("novelix write", () => {
     it("warns before writing when the target book still uses legacy format", async () => {
       const bookDir = join(projectDir, "books", "legacy-write-hint");
       const storyDir = join(bookDir, "story");
@@ -1079,14 +1079,14 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos analytics", () => {
+  describe("novelix analytics", () => {
     it("errors when no book exists", () => {
       const { exitCode } = runStderr(["analytics"]);
       expect(exitCode).not.toBe(0);
     });
   });
 
-  describe("jiaos review", () => {
+  describe("novelix review", () => {
     it("preserves the original chapter snapshot when approving review", async () => {
       const configPath = join(projectDir, "novelix.json");
       const initialized = await stat(configPath)
@@ -1185,7 +1185,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos plan/compose", () => {
+  describe("novelix plan/compose", () => {
     beforeAll(async () => {
       const configPath = join(projectDir, "novelix.json");
       const initialized = await stat(configPath)
@@ -1358,7 +1358,7 @@ describe("CLI integration", () => {
     });
   });
 
-  describe("jiaos export", () => {
+  describe("novelix export", () => {
     beforeAll(async () => {
       const configPath = join(projectDir, "novelix.json");
       const initialized = await stat(configPath)
