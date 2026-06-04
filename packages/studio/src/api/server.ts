@@ -5199,7 +5199,7 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
     const { GLOBAL_ENV_PATH } = await import("@actalk/novelix-core");
 
     const checks = {
-      jiaosJson: existsSync(join(root, "novelix.json")),
+      novelixJson: existsSync(join(root, "novelix.json")),
       projectEnv: existsSync(join(root, ".env")),
       globalEnv: existsSync(GLOBAL_ENV_PATH),
       booksDir: existsSync(join(root, "books")),

@@ -1,2 +1,27 @@
 {"level":"info","tag":"studio","message":"阶段：审计第12章","timestamp":"2026-06-03T05:24:16.886Z"}
 {"level":"info","tag":"studio","message":"阶段：审计第12章","timestamp":"2026-06-03T05:24:50.531Z"}
+{"level":"info","tag":"studio","message":"阶段：准备章节输入","timestamp":"2026-06-03T09:09:00.370Z"}
+{"level":"info","tag":"studio","message":"阶段：撰写章节草稿","timestamp":"2026-06-03T09:09:29.490Z"}
+{"level":"info","tag":"writer","message":"阶段 1：创作正文（第13章）","timestamp":"2026-06-03T09:09:29.496Z"}
+{"level":"info","tag":"writer","message":"阶段 2：状态结算（第13章，5097字）","timestamp":"2026-06-03T09:10:34.031Z"}
+{"level":"info","tag":"writer","message":"阶段 2a：提取第13章事实","timestamp":"2026-06-03T09:10:34.034Z"}
+{"level":"info","tag":"writer","message":"阶段 2b：把观察结果回写到真相文件","timestamp":"2026-06-03T09:11:31.997Z"}
+{"level":"warn","tag":"writer","message":"后写校验：第13章 2 个错误，1 个警告","timestamp":"2026-06-03T09:11:59.169Z"}
+{"level":"warn","tag":"writer","message":"[error] 章节号指称: 正文中出现了章节号指称：\"第13章\"。角色不知道自己在第几章。","timestamp":"2026-06-03T09:11:59.169Z"}
+{"level":"warn","tag":"writer","message":"[error] 禁止句式: 出现了「不是……而是……」句式","timestamp":"2026-06-03T09:11:59.169Z"}
+{"level":"warn","tag":"writer","message":"伏笔健康：第13章发现 1 条警告","timestamp":"2026-06-03T09:11:59.169Z"}
+{"level":"warn","tag":"writer","message":"[warning] 连续短段: 连续出现3个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-03T09:11:59.169Z"}
+{"level":"warn","tag":"writer","message":"[warning] 伏笔债务: 这些伏笔已经进入回收/推进压力，但本章没有真正处理：character-揭示东菱的真-实行动轨迹与-南院事件的具（近期，可回收）。","timestamp":"2026-06-03T09:11:59.169Z"}
+{"level":"info","tag":"studio","message":"审计前字数归一化：第13章 5065 -> 3605","timestamp":"2026-06-03T09:12:21.096Z"}
+{"level":"info","tag":"studio","message":"阶段：审计草稿","timestamp":"2026-06-03T09:12:21.098Z"}
+{"level":"info","tag":"studio","message":"阶段：修复轮次 1/1（当前 96 分）","timestamp":"2026-06-03T09:12:52.222Z"}
+{"level":"warn","tag":"studio","message":"修复轮次 1 未净提升（96 → 0），退出循环","timestamp":"2026-06-03T09:13:55.096Z"}
+{"level":"info","tag":"studio","message":"[promotion] 2 hook(s) promoted after chapter 13","timestamp":"2026-06-03T09:13:55.107Z"}
+{"level":"info","tag":"studio","message":"阶段：落盘最终章节","timestamp":"2026-06-03T09:13:55.108Z"}
+{"level":"info","tag":"studio","message":"阶段：生成最终真相文件","timestamp":"2026-06-03T09:13:55.108Z"}
+{"level":"warn","tag":"studio","message":"[title] 章节标题\"午牌向西\"已自动调整为\"第13章 午牌向西\"。","timestamp":"2026-06-03T09:15:05.529Z"}
+{"level":"info","tag":"studio","message":"阶段：校验真相文件变更","timestamp":"2026-06-03T09:15:05.537Z"}
+{"level":"warn","tag":"studio","message":"[paragraph] 连续出现3个不足35字的短段，容易形成短句堆砌。","timestamp":"2026-06-03T09:15:11.156Z"}
+{"level":"info","tag":"studio","message":"阶段：同步记忆索引","timestamp":"2026-06-03T09:15:11.164Z"}
+{"level":"info","tag":"studio","message":"阶段：更新章节索引与快照","timestamp":"2026-06-03T09:15:11.178Z"}
+{"level":"info","tag":"studio","message":"阶段：审计第13章","timestamp":"2026-06-04T01:07:27.054Z"}
