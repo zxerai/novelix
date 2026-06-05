@@ -2219,6 +2219,12 @@ describe("createStudioServer daemon lifecycle", () => {
   });
 
   it("exposes chapter review versions and restores a selected version", async () => {
+    await mkdir(join(root, "books", "demo-book", "story", "runtime"), { recursive: true });
+    await writeFile(
+      join(root, "books", "demo-book", "story", "runtime", "chapter-0003.intent.md"),
+      "stale intent",
+      "utf-8",
+    );
     loadBookConfigMock.mockResolvedValue({
       id: "demo-book",
       title: "Demo",
@@ -2272,6 +2278,17 @@ describe("createStudioServer daemon lifecycle", () => {
     expect(restoreResponse.status).toBe(200);
     await expect(readFile(join(root, "books", "demo-book", "chapters", "0003_Demo.md"), "utf-8"))
       .resolves.toBe("# Demo\n\nBody");
+    expect(saveChapterIndexMock).toHaveBeenLastCalledWith("demo-book", [
+      expect.objectContaining({
+        number: 3,
+        title: "Demo",
+        status: "audit-failed",
+        wordCount: 1,
+        auditIssues: ["[warning] Manual chapter edit requires review before continuation."],
+      }),
+    ]);
+    await expect(readdir(join(root, "books", "demo-book", "story", "runtime")))
+      .resolves.toEqual([]);
   });
 
   it("routes create requests through the shared structured interaction runtime", async () => {

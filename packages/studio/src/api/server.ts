@@ -387,6 +387,8 @@ type ExternalChatEditResult = {
 
 const CHAT_EDIT_WARNING =
   "[warning] Chat external edit requires review before continuation.";
+const MANUAL_CHAPTER_EDIT_WARNING =
+  "[warning] Manual chapter edit requires review before continuation.";
 const CHAT_EDIT_TEXT_EXTENSIONS = /\.(md|txt|json|ya?ml)$/i;
 const CHAT_EDIT_ALLOWED_ROOTS = new Set([
   "books",
@@ -548,6 +550,50 @@ async function syncExternalChapterEdit(params: {
   if (updated.length > 0) {
     await params.state.saveChapterIndex(params.bookId, updated);
   }
+
+  const runtimeDir = join(
+    params.root,
+    "books",
+    params.bookId,
+    "story",
+    "runtime",
+  );
+  const padded = String(params.chapterNumber).padStart(4, "0");
+  const runtimeFiles = await readdir(runtimeDir).catch(() => []);
+  await Promise.all(
+    runtimeFiles
+      .filter((file) => file.startsWith(`chapter-${padded}.`))
+      .map((file) => rm(join(runtimeDir, file), { force: true })),
+  );
+}
+
+async function syncManualChapterBodyChange(params: {
+  readonly state: StateManager;
+  readonly root: string;
+  readonly bookId: string;
+  readonly chapterNumber: number;
+  readonly content: string;
+  readonly title?: string | null;
+  readonly countingMode: ReturnType<typeof resolveLengthCountingMode>;
+}): Promise<void> {
+  const index = [...(await params.state.loadChapterIndex(params.bookId))];
+  const updatedAt = new Date().toISOString();
+  const updated = index.map((ch) =>
+    ch.number === params.chapterNumber
+      ? {
+          ...ch,
+          ...(params.title ? { title: params.title } : {}),
+          status: "audit-failed" as const,
+          wordCount: countChapterLength(params.content, params.countingMode),
+          updatedAt,
+          auditIssues: [
+            ...ch.auditIssues.filter((issue) => issue !== MANUAL_CHAPTER_EDIT_WARNING),
+            MANUAL_CHAPTER_EDIT_WARNING,
+          ],
+        }
+      : ch,
+  );
+  await params.state.saveChapterIndex(params.bookId, updated);
 
   const runtimeDir = join(
     params.root,
@@ -2074,22 +2120,17 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
         }
       }
 
-      // Sync index.json title
       const book = await state.loadBookConfig(id).catch(() => undefined);
       const countingMode = resolveLengthCountingMode(book?.language ?? "zh");
-      const index = [...(await state.loadChapterIndex(id))];
-      const updatedAt = new Date().toISOString();
-      const updated = index.map((ch) =>
-        ch.number === num
-          ? {
-              ...ch,
-              ...(newTitle ? { title: newTitle } : {}),
-              wordCount: countChapterLength(content, countingMode),
-              updatedAt,
-            }
-          : ch,
-      );
-      await state.saveChapterIndex(id, updated);
+      await syncManualChapterBodyChange({
+        state,
+        root,
+        bookId: id,
+        chapterNumber: num,
+        content,
+        title: newTitle,
+        countingMode,
+      });
 
       return c.json({ ok: true, chapterNumber: num });
     } catch (e) {
@@ -2107,19 +2148,15 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
       const book = await state.loadBookConfig(id).catch(() => undefined);
       const countingMode = resolveLengthCountingMode(book?.language ?? "zh");
       const restoredTitle = extractChapterTitle(restored.content);
-      const index = [...(await state.loadChapterIndex(id))];
-      const updatedAt = new Date().toISOString();
-      const updated = index.map((ch) =>
-        ch.number === num
-          ? {
-              ...ch,
-              ...(restoredTitle ? { title: restoredTitle } : {}),
-              wordCount: countChapterLength(restored.content, countingMode),
-              updatedAt,
-            }
-          : ch,
-      );
-      await state.saveChapterIndex(id, updated);
+      await syncManualChapterBodyChange({
+        state,
+        root,
+        bookId: id,
+        chapterNumber: num,
+        content: restored.content,
+        title: restoredTitle,
+        countingMode,
+      });
       return c.json({
         ok: true,
         chapterNumber: num,
