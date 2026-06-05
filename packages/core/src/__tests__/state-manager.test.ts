@@ -104,6 +104,45 @@ describe("StateManager", () => {
     });
   });
 
+  describe("chapter content versions", () => {
+    it("stores previous chapter content and restores it without losing the current draft", async () => {
+      const bookId = "version-book";
+      const chaptersDir = join(manager.bookDir(bookId), "chapters");
+      await mkdir(chaptersDir, { recursive: true });
+      await writeFile(
+        join(chaptersDir, "0001_First_Light.md"),
+        "# First Light\n\nOriginal body.",
+        "utf-8",
+      );
+
+      const original = await manager.loadChapterContent(bookId, 1);
+      const version = await manager.createChapterVersion(bookId, 1, "manual-edit", original);
+      await writeFile(original.path, "# First Light\n\nEdited body.", "utf-8");
+
+      const versions = await manager.listChapterVersions(bookId, 1);
+      expect(versions).toHaveLength(1);
+      expect(versions[0]).toMatchObject({
+        id: version.id,
+        filename: "0001_First_Light.md",
+        reason: "manual-edit",
+        content: "# First Light\n\nOriginal body.",
+      });
+
+      await manager.restoreChapterVersion(bookId, 1, version.id);
+
+      await expect(readFile(original.path, "utf-8")).resolves.toBe(
+        "# First Light\n\nOriginal body.",
+      );
+
+      const restoredVersions = await manager.listChapterVersions(bookId, 1);
+      expect(restoredVersions.map((item) => item.reason)).toEqual(
+        expect.arrayContaining(["manual-edit", "pre-restore"]),
+      );
+      expect(restoredVersions.find((item) => item.reason === "pre-restore")?.content)
+        .toBe("# First Light\n\nEdited body.");
+    });
+  });
+
   // -------------------------------------------------------------------------
   // getNextChapterNumber
   // -------------------------------------------------------------------------

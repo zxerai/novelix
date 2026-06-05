@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fetchJson, useApi, postApi } from "../hooks/use-api";
+import { useApi, postApi, putApi } from "../hooks/use-api";
 import type { Theme } from "../hooks/use-theme";
 import type { TFunction } from "../hooks/use-i18n";
 import { useColors } from "../hooks/use-colors";
@@ -18,12 +18,38 @@ import {
   Pencil,
   Save,
   Eye,
+  History,
+  GitCompare,
+  Undo2,
 } from "lucide-react";
 
 interface ChapterData {
   readonly chapterNumber: number;
   readonly filename: string;
   readonly content: string;
+}
+
+interface ChapterVersionSummary {
+  readonly id: string;
+  readonly filename: string;
+  readonly reason: string;
+  readonly createdAt: string;
+  readonly contentLength: number;
+}
+
+interface ChapterReviewData {
+  readonly chapterNumber: number;
+  readonly current: {
+    readonly filename: string;
+    readonly content: string;
+    readonly contentLength: number;
+  };
+  readonly baseVersion: (ChapterVersionSummary & { readonly content: string }) | null;
+  readonly versions: ReadonlyArray<ChapterVersionSummary>;
+  readonly diff: ReadonlyArray<{
+    readonly type: "unchanged" | "removed" | "added";
+    readonly lines: ReadonlyArray<string>;
+  }>;
 }
 
 interface Nav {
@@ -42,9 +68,18 @@ export function ChapterReader({ bookId, chapterNumber, nav, theme, t }: {
   const { data, loading, error, refetch } = useApi<ChapterData>(
     `/books/${bookId}/chapters/${chapterNumber}`,
   );
+  const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
+  const reviewPath = selectedVersionId
+    ? `/books/${bookId}/chapters/${chapterNumber}/review?version=${encodeURIComponent(selectedVersionId)}`
+    : `/books/${bookId}/chapters/${chapterNumber}/review`;
+  const {
+    data: reviewData,
+    refetch: refetchReview,
+  } = useApi<ChapterReviewData>(reviewPath);
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState("");
   const [saving, setSaving] = useState(false);
+  const [restoringVersion, setRestoringVersion] = useState(false);
 
   const handleStartEdit = () => {
     if (!data) return;
@@ -60,17 +95,39 @@ export function ChapterReader({ bookId, chapterNumber, nav, theme, t }: {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await fetchJson(`/books/${bookId}/chapters/${chapterNumber}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: editContent }),
-      });
+      await putApi(`/books/${bookId}/chapters/${chapterNumber}`, { content: editContent });
       setEditing(false);
       refetch();
+      refetchReview();
     } catch (e) {
       alert(e instanceof Error ? e.message : "Save failed");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRestoreVersion = async () => {
+    if (!reviewData?.baseVersion) return;
+    const isZh = t("nav.connected") === "已连接";
+    const ok = confirm(
+      isZh
+        ? "恢复后会先保存当前稿，再恢复所选版本。继续？"
+        : "The current draft will be saved before restoring this version. Continue?",
+    );
+    if (!ok) return;
+
+    setRestoringVersion(true);
+    try {
+      await postApi(
+        `/books/${bookId}/chapters/${chapterNumber}/versions/${reviewData.baseVersion.id}/restore`,
+      );
+      setSelectedVersionId(null);
+      await refetch();
+      await refetchReview();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Restore failed");
+    } finally {
+      setRestoringVersion(false);
     }
   };
 
@@ -112,6 +169,8 @@ export function ChapterReader({ bookId, chapterNumber, nav, theme, t }: {
   };
 
   const paragraphs = body.split(/\n\n+/).filter(Boolean);
+  const isZh = t("nav.connected") === "已连接";
+  const hasVersions = (reviewData?.versions.length ?? 0) > 0;
 
   return (
     <div className="max-w-4xl mx-auto space-y-10 fade-in">
@@ -192,6 +251,104 @@ export function ChapterReader({ bookId, chapterNumber, nav, theme, t }: {
           </button>
         </div>
       </div>
+
+      {reviewData && (
+        <section className="paper-sheet rounded-2xl border border-border/40 shadow-sm p-5 space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <GitCompare size={16} />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-sm font-bold text-foreground">
+                  {isZh ? "版本审阅" : "Version Review"}
+                </h2>
+                <p className="text-xs text-muted-foreground truncate">
+                  {reviewData.baseVersion
+                    ? `${reviewData.baseVersion.reason} · ${new Date(reviewData.baseVersion.createdAt).toLocaleString()}`
+                    : (isZh ? "暂无历史版本" : "No previous version")}
+                </p>
+              </div>
+            </div>
+
+            {hasVersions && (
+              <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                <label className="sr-only" htmlFor="chapter-version-select">
+                  {isZh ? "历史版本" : "History version"}
+                </label>
+                <select
+                  id="chapter-version-select"
+                  value={reviewData.baseVersion?.id ?? ""}
+                  onChange={(event) => setSelectedVersionId(event.target.value || null)}
+                  className="h-9 rounded-lg border border-border/60 bg-background px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  {reviewData.versions.map((version) => (
+                    <option key={version.id} value={version.id}>
+                      {version.reason} · {new Date(version.createdAt).toLocaleString()}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={handleRestoreVersion}
+                  disabled={!reviewData.baseVersion || restoringVersion}
+                  className="h-9 inline-flex items-center justify-center gap-2 rounded-lg border border-border/60 bg-secondary px-3 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-all disabled:opacity-50"
+                >
+                  {restoringVersion ? (
+                    <div className="w-3.5 h-3.5 border-2 border-muted-foreground/20 border-t-muted-foreground rounded-full animate-spin" />
+                  ) : (
+                    <Undo2 size={14} />
+                  )}
+                  {restoringVersion
+                    ? (isZh ? "恢复中" : "Restoring")
+                    : (isZh ? "恢复版本" : "Restore")}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-lg border border-border/50 overflow-hidden bg-background/70">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border/40 text-[11px] font-bold uppercase text-muted-foreground">
+              <History size={13} />
+              <span>{isZh ? "差异" : "Diff"}</span>
+            </div>
+            <div className="max-h-80 overflow-auto text-xs font-mono leading-5">
+              {hasVersions ? (
+                reviewData.diff.map((segment, segmentIndex) =>
+                  segment.lines.map((line, lineIndex) => {
+                    const key = `${segmentIndex}-${lineIndex}`;
+                    const prefix = segment.type === "added"
+                      ? "+"
+                      : segment.type === "removed"
+                        ? "-"
+                        : " ";
+                    const lineClass = segment.type === "added"
+                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                      : segment.type === "removed"
+                        ? "bg-destructive/10 text-destructive"
+                        : "text-muted-foreground";
+                    return (
+                      <div
+                        key={key}
+                        className={`grid grid-cols-[2rem_1fr] border-b border-border/20 last:border-b-0 ${lineClass}`}
+                      >
+                        <span className="select-none text-center opacity-70">{prefix}</span>
+                        <span className="whitespace-pre-wrap break-words pr-3">
+                          {line.length > 0 ? line : " "}
+                        </span>
+                      </div>
+                    );
+                  }),
+                )
+              ) : (
+                <div className="px-4 py-6 text-center text-muted-foreground font-sans">
+                  {isZh ? "暂无历史版本" : "No previous versions"}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Manuscript Sheet */}
       <div className="paper-sheet rounded-2xl p-8 md:p-16 lg:p-24 shadow-2xl shadow-primary/5 min-h-[80vh] relative overflow-hidden">

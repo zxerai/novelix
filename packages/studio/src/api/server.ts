@@ -36,10 +36,12 @@ import {
   fetchWithProxy,
   chatCompletion,
   buildExportArtifact,
+  countChapterLength,
   GLOBAL_ENV_PATH,
   COVER_PROVIDER_PRESETS,
   Scheduler,
   coverSecretKey,
+  resolveLengthCountingMode,
   resolveCoverProviderPreset,
   type ResolvedModel,
   type PipelineConfig,
@@ -123,6 +125,83 @@ function summarizeResult(result: unknown): string {
     if (typeof r.text === "string") return r.text.slice(0, 200);
   }
   return String(result).slice(0, 200);
+}
+
+type ChapterDiffSegment = {
+  readonly type: "unchanged" | "removed" | "added";
+  readonly lines: ReadonlyArray<string>;
+};
+
+function pushDiffLine(
+  segments: ChapterDiffSegment[],
+  type: ChapterDiffSegment["type"],
+  line: string,
+): void {
+  const last = segments.at(-1);
+  if (last?.type === type) {
+    segments[segments.length - 1] = { type, lines: [...last.lines, line] };
+    return;
+  }
+  segments.push({ type, lines: [line] });
+}
+
+function buildLineDiff(before: string, after: string): ReadonlyArray<ChapterDiffSegment> {
+  const oldLines = before.replace(/\r\n/g, "\n").split("\n");
+  const newLines = after.replace(/\r\n/g, "\n").split("\n");
+  const cellCount = oldLines.length * newLines.length;
+
+  if (cellCount > 400_000) {
+    return [
+      { type: "removed", lines: oldLines },
+      { type: "added", lines: newLines },
+    ];
+  }
+
+  const dp = Array.from(
+    { length: oldLines.length + 1 },
+    () => new Array<number>(newLines.length + 1).fill(0),
+  );
+
+  for (let i = oldLines.length - 1; i >= 0; i -= 1) {
+    for (let j = newLines.length - 1; j >= 0; j -= 1) {
+      dp[i]![j] = oldLines[i] === newLines[j]
+        ? dp[i + 1]![j + 1]! + 1
+        : Math.max(dp[i + 1]![j]!, dp[i]![j + 1]!);
+    }
+  }
+
+  const segments: ChapterDiffSegment[] = [];
+  let i = 0;
+  let j = 0;
+  while (i < oldLines.length && j < newLines.length) {
+    if (oldLines[i] === newLines[j]) {
+      pushDiffLine(segments, "unchanged", oldLines[i]!);
+      i += 1;
+      j += 1;
+    } else if (dp[i + 1]![j]! >= dp[i]![j + 1]!) {
+      pushDiffLine(segments, "removed", oldLines[i]!);
+      i += 1;
+    } else {
+      pushDiffLine(segments, "added", newLines[j]!);
+      j += 1;
+    }
+  }
+  while (i < oldLines.length) {
+    pushDiffLine(segments, "removed", oldLines[i]!);
+    i += 1;
+  }
+  while (j < newLines.length) {
+    pushDiffLine(segments, "added", newLines[j]!);
+    j += 1;
+  }
+
+  return segments;
+}
+
+function extractChapterTitle(content: string): string | undefined {
+  const titleMatch = content.match(/^#\s*(?:第\s*\d+\s*章)?\s*(.+)/m);
+  if (!titleMatch?.[1]?.trim()) return undefined;
+  return titleMatch[1].trim().replace(/^[：:]\s*/, "");
 }
 
 function compareServiceListItems(
@@ -1894,6 +1973,46 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
 
   // --- Chapters ---
 
+  app.get("/api/v1/books/:id/chapters/:num/review", async (c) => {
+    const id = c.req.param("id");
+    const num = parseInt(c.req.param("num"), 10);
+    const requestedVersionId = c.req.query("version");
+
+    try {
+      const current = await state.loadChapterContent(id, num);
+      const versions = await state.listChapterVersions(id, num);
+      const baseVersion = requestedVersionId
+        ? versions.find((version) => version.id === requestedVersionId)
+        : versions[0];
+      const versionSummaries = versions.map(({ content: _content, ...version }) => ({
+        ...version,
+      }));
+
+      return c.json({
+        chapterNumber: num,
+        current: {
+          filename: current.filename,
+          content: current.content,
+          contentLength: current.content.length,
+        },
+        baseVersion: baseVersion
+          ? {
+              id: baseVersion.id,
+              filename: baseVersion.filename,
+              reason: baseVersion.reason,
+              createdAt: baseVersion.createdAt,
+              content: baseVersion.content,
+              contentLength: baseVersion.contentLength,
+            }
+          : null,
+        versions: versionSummaries,
+        diff: baseVersion ? buildLineDiff(baseVersion.content, current.content) : [],
+      });
+    } catch {
+      return c.json({ error: "Chapter not found" }, 404);
+    }
+  });
+
   app.get("/api/v1/books/:id/chapters/:num", async (c) => {
     const id = c.req.param("id");
     const num = parseInt(c.req.param("num"), 10);
@@ -1931,15 +2050,16 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
       );
       if (!match) return c.json({ error: "Chapter not found" }, 404);
 
+      const currentSnapshot = await state.loadChapterContent(id, num);
+      await state.createChapterVersion(id, num, "manual-edit", currentSnapshot);
+
       // Write content to file
       await writeFile(join(chaptersDir, match), content, "utf-8");
 
       // Extract title from heading and sync filename + index
-      const titleMatch = content.match(/^#\s*(?:第\s*\d+\s*章)?\s*(.+)/m);
-      let newTitle: string | undefined;
-      if (titleMatch?.[1]?.trim()) {
+      const newTitle = extractChapterTitle(content);
+      if (newTitle) {
         // Clean heading — remove chapter number prefix
-        newTitle = titleMatch[1].trim().replace(/^[：:]\s*/, "");
         // Guard: only rename if title differs from current filename title
         const currentTitleFromFile = match.replace(/^\d{4}_(.+)\.md$/, "$1");
         if (newTitle && newTitle !== currentTitleFromFile) {
@@ -1955,15 +2075,60 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
       }
 
       // Sync index.json title
-      if (newTitle) {
-        const index = [...(await state.loadChapterIndex(id))];
-        const updated = index.map((ch) =>
-          ch.number === num ? { ...ch, title: newTitle } : ch,
-        );
-        await state.saveChapterIndex(id, updated);
-      }
+      const book = await state.loadBookConfig(id).catch(() => undefined);
+      const countingMode = resolveLengthCountingMode(book?.language ?? "zh");
+      const index = [...(await state.loadChapterIndex(id))];
+      const updatedAt = new Date().toISOString();
+      const updated = index.map((ch) =>
+        ch.number === num
+          ? {
+              ...ch,
+              ...(newTitle ? { title: newTitle } : {}),
+              wordCount: countChapterLength(content, countingMode),
+              updatedAt,
+            }
+          : ch,
+      );
+      await state.saveChapterIndex(id, updated);
 
       return c.json({ ok: true, chapterNumber: num });
+    } catch (e) {
+      return c.json({ error: String(e) }, 500);
+    }
+  });
+
+  app.post("/api/v1/books/:id/chapters/:num/versions/:versionId/restore", async (c) => {
+    const id = c.req.param("id");
+    const num = parseInt(c.req.param("num"), 10);
+    const versionId = c.req.param("versionId");
+
+    try {
+      const restored = await state.restoreChapterVersion(id, num, versionId);
+      const book = await state.loadBookConfig(id).catch(() => undefined);
+      const countingMode = resolveLengthCountingMode(book?.language ?? "zh");
+      const restoredTitle = extractChapterTitle(restored.content);
+      const index = [...(await state.loadChapterIndex(id))];
+      const updatedAt = new Date().toISOString();
+      const updated = index.map((ch) =>
+        ch.number === num
+          ? {
+              ...ch,
+              ...(restoredTitle ? { title: restoredTitle } : {}),
+              wordCount: countChapterLength(restored.content, countingMode),
+              updatedAt,
+            }
+          : ch,
+      );
+      await state.saveChapterIndex(id, updated);
+      return c.json({
+        ok: true,
+        chapterNumber: num,
+        restoredVersion: {
+          id: restored.id,
+          reason: restored.reason,
+          createdAt: restored.createdAt,
+        },
+      });
     } catch (e) {
       return c.json({ error: String(e) }, 500);
     }
@@ -4503,6 +4668,8 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
       );
       if (!match) return c.json({ error: "Chapter not found" }, 404);
 
+      await state.createChapterVersion(id, chapterNum, "pre-revise");
+
       const pipeline = new PipelineRunner(
         await buildPipelineConfig({
           externalContext: body.brief,
@@ -4784,6 +4951,7 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
 
     broadcast("rewrite:start", { bookId: id, chapter: chapterNum });
     try {
+      await state.createChapterVersion(id, chapterNum, "pre-rewrite");
       const rollbackTarget = chapterNum - 1;
       const discarded = await state.rollbackToChapter(id, rollbackTarget);
       const pipeline = new PipelineRunner(

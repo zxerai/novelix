@@ -28,6 +28,7 @@ import {
   Sparkles,
   Trash2,
   Save,
+  GitCompare,
 } from "lucide-react";
 
 interface ChapterMeta {
@@ -784,13 +785,24 @@ export function BookDetail({
                       {ch.number.toString().padStart(2, "0")}
                     </td>
                     <td className="px-6 py-4">
-                      <button
-                        onClick={() => nav.toChapter(bookId, ch.number)}
-                        className="font-serif text-lg font-medium hover:text-primary transition-colors text-left"
-                      >
-                        {ch.title ||
-                          t("chapter.label").replace("{n}", String(ch.number))}
-                      </button>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <button
+                          onClick={() => nav.toChapter(bookId, ch.number)}
+                          className="font-serif text-lg font-medium hover:text-primary transition-colors text-left min-w-0"
+                        >
+                          {ch.title ||
+                            t("chapter.label").replace("{n}", String(ch.number))}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => nav.toChapter(bookId, ch.number)}
+                          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                          title={book.language === "en" ? "Version review" : "版本审阅"}
+                          aria-label={book.language === "en" ? "Version review" : "版本审阅"}
+                        >
+                          <GitCompare size={13} />
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-muted-foreground font-medium tabular-nums text-xs">
                       {(ch.wordCount ?? 0).toLocaleString()}

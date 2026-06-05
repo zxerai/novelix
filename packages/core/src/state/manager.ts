@@ -1,8 +1,36 @@
-import { readFile, writeFile, mkdir, readdir, rm, stat, unlink, open } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import {
+  mkdir,
+  open,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  stat,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
 import { isAbsolute, join, relative } from "node:path";
 import type { BookConfig } from "../models/book.js";
 import type { ChapterMeta } from "../models/chapter.js";
 import { bootstrapStructuredStateFromMarkdown, resolveDurableStoryProgress } from "./state-bootstrap.js";
+
+export interface ChapterContentSnapshot {
+  readonly chapterNumber: number;
+  readonly filename: string;
+  readonly path: string;
+  readonly content: string;
+}
+
+export interface ChapterVersionSnapshot {
+  readonly id: string;
+  readonly chapterNumber: number;
+  readonly filename: string;
+  readonly reason: string;
+  readonly createdAt: string;
+  readonly content: string;
+  readonly contentLength: number;
+}
 
 export class StateManager {
   /** Books actively being written by this process — used for same-process stale lock detection. */
@@ -279,6 +307,157 @@ export class StateManager {
     }
   }
 
+  async loadChapterContent(
+    bookId: string,
+    chapterNumber: number,
+  ): Promise<ChapterContentSnapshot> {
+    const chapterFile = await this.findChapterFile(bookId, chapterNumber);
+    if (!chapterFile) {
+      throw new Error(`Chapter ${chapterNumber} not found in "${bookId}".`);
+    }
+    const content = await readFile(chapterFile.path, "utf-8");
+    return { ...chapterFile, content };
+  }
+
+  async createChapterVersion(
+    bookId: string,
+    chapterNumber: number,
+    reason = "snapshot",
+    contentSnapshot?: ChapterContentSnapshot,
+  ): Promise<ChapterVersionSnapshot> {
+    const snapshot = contentSnapshot ?? await this.loadChapterContent(bookId, chapterNumber);
+    const createdAt = new Date().toISOString();
+    const safeReason = this.safeVersionReason(reason);
+    const id = `${createdAt.replace(/[:.]/g, "-")}_${safeReason}_${randomUUID()}.json`;
+    const version: ChapterVersionSnapshot = {
+      id,
+      chapterNumber,
+      filename: snapshot.filename,
+      reason,
+      createdAt,
+      content: snapshot.content,
+      contentLength: snapshot.content.length,
+    };
+
+    const versionDir = this.chapterVersionDir(bookId, chapterNumber);
+    await mkdir(versionDir, { recursive: true });
+    await writeFile(join(versionDir, id), JSON.stringify(version, null, 2), "utf-8");
+    return version;
+  }
+
+  async listChapterVersions(
+    bookId: string,
+    chapterNumber: number,
+  ): Promise<ReadonlyArray<ChapterVersionSnapshot>> {
+    const versionDir = this.chapterVersionDir(bookId, chapterNumber);
+    let files: string[];
+    try {
+      files = await readdir(versionDir);
+    } catch {
+      return [];
+    }
+
+    const versions = await Promise.all(
+      files
+        .filter((file) => file.endsWith(".json"))
+        .map(async (file): Promise<ChapterVersionSnapshot | null> => {
+          try {
+            const raw = await readFile(join(versionDir, file), "utf-8");
+            const parsed = JSON.parse(raw) as Partial<ChapterVersionSnapshot>;
+            if (
+              parsed.id !== file ||
+              parsed.chapterNumber !== chapterNumber ||
+              typeof parsed.filename !== "string" ||
+              typeof parsed.reason !== "string" ||
+              typeof parsed.createdAt !== "string" ||
+              typeof parsed.content !== "string"
+            ) {
+              return null;
+            }
+            return {
+              id: parsed.id,
+              chapterNumber: parsed.chapterNumber,
+              filename: parsed.filename,
+              reason: parsed.reason,
+              createdAt: parsed.createdAt,
+              content: parsed.content,
+              contentLength: parsed.contentLength ?? parsed.content.length,
+            };
+          } catch {
+            return null;
+          }
+        }),
+    );
+
+    return versions
+      .filter((version): version is ChapterVersionSnapshot => version !== null)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  async loadChapterVersion(
+    bookId: string,
+    chapterNumber: number,
+    versionId: string,
+  ): Promise<ChapterVersionSnapshot | null> {
+    if (!this.isSafeVersionId(versionId)) return null;
+    const raw = await readFile(
+      join(this.chapterVersionDir(bookId, chapterNumber), versionId),
+      "utf-8",
+    ).catch(() => null);
+    if (!raw) return null;
+
+    try {
+      const parsed = JSON.parse(raw) as Partial<ChapterVersionSnapshot>;
+      if (
+        parsed.id !== versionId ||
+        parsed.chapterNumber !== chapterNumber ||
+        typeof parsed.filename !== "string" ||
+        typeof parsed.reason !== "string" ||
+        typeof parsed.createdAt !== "string" ||
+        typeof parsed.content !== "string"
+      ) {
+        return null;
+      }
+      return {
+        id: parsed.id,
+        chapterNumber: parsed.chapterNumber,
+        filename: parsed.filename,
+        reason: parsed.reason,
+        createdAt: parsed.createdAt,
+        content: parsed.content,
+        contentLength: parsed.contentLength ?? parsed.content.length,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  async restoreChapterVersion(
+    bookId: string,
+    chapterNumber: number,
+    versionId: string,
+  ): Promise<ChapterVersionSnapshot> {
+    const version = await this.loadChapterVersion(bookId, chapterNumber, versionId);
+    if (!version) {
+      throw new Error(`Chapter ${chapterNumber} version "${versionId}" not found.`);
+    }
+
+    const current = await this.loadChapterContent(bookId, chapterNumber);
+    await this.createChapterVersion(bookId, chapterNumber, "pre-restore", current);
+    await writeFile(current.path, version.content, "utf-8");
+    if (
+      version.filename !== current.filename &&
+      this.isSafeChapterFilename(chapterNumber, version.filename)
+    ) {
+      const targetPath = join(this.bookDir(bookId), "chapters", version.filename);
+      const targetExists = await stat(targetPath).then(() => true, () => false);
+      if (!targetExists) {
+        await rename(current.path, targetPath);
+      }
+    }
+    return version;
+  }
+
   async saveChapterIndex(
     bookId: string,
     index: ReadonlyArray<ChapterMeta>,
@@ -297,6 +476,62 @@ export class StateManager {
       JSON.stringify(index, null, 2),
       "utf-8",
     );
+  }
+
+  private async findChapterFile(
+    bookId: string,
+    chapterNumber: number,
+  ): Promise<Omit<ChapterContentSnapshot, "content"> | null> {
+    const chaptersDir = join(this.bookDir(bookId), "chapters");
+    const paddedNum = String(chapterNumber).padStart(4, "0");
+    try {
+      const files = await readdir(chaptersDir);
+      const filename = files
+        .filter((file) => file.startsWith(paddedNum) && file.endsWith(".md"))
+        .sort()[0];
+      return filename
+        ? { chapterNumber, filename, path: join(chaptersDir, filename) }
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private chapterVersionDir(bookId: string, chapterNumber: number): string {
+    return join(
+      this.bookDir(bookId),
+      "chapters",
+      "versions",
+      String(chapterNumber).padStart(4, "0"),
+    );
+  }
+
+  private safeVersionReason(reason: string): string {
+    const normalized = reason
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 32);
+    return normalized || "snapshot";
+  }
+
+  private isSafeVersionId(versionId: string): boolean {
+    return Boolean(versionId) &&
+      !versionId.includes("\0") &&
+      !versionId.includes("/") &&
+      !versionId.includes("\\") &&
+      !versionId.includes("..") &&
+      versionId.endsWith(".json");
+  }
+
+  private isSafeChapterFilename(chapterNumber: number, filename: string): boolean {
+    const paddedNum = String(chapterNumber).padStart(4, "0");
+    return filename.startsWith(`${paddedNum}_`) &&
+      filename.endsWith(".md") &&
+      !filename.includes("\0") &&
+      !filename.includes("/") &&
+      !filename.includes("\\") &&
+      !filename.includes("..");
   }
 
   async snapshotState(bookId: string, chapterNumber: number): Promise<void> {

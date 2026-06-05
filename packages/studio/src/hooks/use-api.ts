@@ -43,6 +43,18 @@ export function deriveInvalidationPaths(path: string): ReadonlyArray<string> {
     return ["/api/v1/books", `/api/v1/books/${chapterAction[1]}`];
   }
 
+  const chapterMutation = normalized.match(
+    /^\/api\/v1\/books\/([^/]+)\/chapters\/(\d+)(?:\/versions\/[^/]+\/restore)?$/,
+  );
+  if (chapterMutation) {
+    return [
+      "/api/v1/books",
+      `/api/v1/books/${chapterMutation[1]}`,
+      `/api/v1/books/${chapterMutation[1]}/chapters/${chapterMutation[2]}`,
+      `/api/v1/books/${chapterMutation[1]}/chapters/${chapterMutation[2]}/review`,
+    ];
+  }
+
   if (/^\/api\/v1\/daemon\/(start|stop)$/.test(normalized)) {
     return ["/api/v1/daemon"];
   }

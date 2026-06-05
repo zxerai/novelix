@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -154,6 +154,119 @@ vi.mock("@actalk/novelix-core", async (importOriginal) => {
       return (await rollbackToChapterMock(bookId, chapterNumber)) as number[];
     }
 
+    async loadChapterContent(bookId: string, chapterNumber: number): Promise<{
+      chapterNumber: number;
+      filename: string;
+      path: string;
+      content: string;
+    }> {
+      const chaptersDir = join(this.root, "books", bookId, "chapters");
+      const paddedNum = String(chapterNumber).padStart(4, "0");
+      const files = await readdir(chaptersDir);
+      const filename = files
+        .filter((file) => file.startsWith(paddedNum) && file.endsWith(".md"))
+        .sort()[0];
+      if (!filename) {
+        throw new Error(`Chapter ${chapterNumber} not found`);
+      }
+      const path = join(chaptersDir, filename);
+      return {
+        chapterNumber,
+        filename,
+        path,
+        content: await readFile(path, "utf-8"),
+      };
+    }
+
+    async createChapterVersion(
+      bookId: string,
+      chapterNumber: number,
+      reason = "snapshot",
+      contentSnapshot?: { filename: string; content: string },
+    ): Promise<{
+      id: string;
+      chapterNumber: number;
+      filename: string;
+      reason: string;
+      createdAt: string;
+      content: string;
+      contentLength: number;
+    }> {
+      const snapshot = contentSnapshot ?? await this.loadChapterContent(bookId, chapterNumber);
+      const createdAt = new Date().toISOString();
+      const id = `${createdAt.replace(/[:.]/g, "-")}_${reason}.json`;
+      const version = {
+        id,
+        chapterNumber,
+        filename: snapshot.filename,
+        reason,
+        createdAt,
+        content: snapshot.content,
+        contentLength: snapshot.content.length,
+      };
+      const versionDir = join(
+        this.root,
+        "books",
+        bookId,
+        "chapters",
+        "versions",
+        String(chapterNumber).padStart(4, "0"),
+      );
+      await mkdir(versionDir, { recursive: true });
+      await writeFile(join(versionDir, id), JSON.stringify(version, null, 2), "utf-8");
+      return version;
+    }
+
+    async listChapterVersions(bookId: string, chapterNumber: number): Promise<Array<{
+      id: string;
+      chapterNumber: number;
+      filename: string;
+      reason: string;
+      createdAt: string;
+      content: string;
+      contentLength: number;
+    }>> {
+      const versionDir = join(
+        this.root,
+        "books",
+        bookId,
+        "chapters",
+        "versions",
+        String(chapterNumber).padStart(4, "0"),
+      );
+      const files = await readdir(versionDir).catch(() => []);
+      const versions = await Promise.all(
+        files
+          .filter((file) => file.endsWith(".json"))
+          .map(async (file) => JSON.parse(await readFile(join(versionDir, file), "utf-8"))),
+      );
+      return versions.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    }
+
+    async restoreChapterVersion(
+      bookId: string,
+      chapterNumber: number,
+      versionId: string,
+    ): Promise<{
+      id: string;
+      chapterNumber: number;
+      filename: string;
+      reason: string;
+      createdAt: string;
+      content: string;
+      contentLength: number;
+    }> {
+      const versions = await this.listChapterVersions(bookId, chapterNumber);
+      const version = versions.find((item) => item.id === versionId);
+      if (!version) {
+        throw new Error(`Chapter ${chapterNumber} version "${versionId}" not found.`);
+      }
+      const current = await this.loadChapterContent(bookId, chapterNumber);
+      await this.createChapterVersion(bookId, chapterNumber, "pre-restore", current);
+      await writeFile(current.path, version.content, "utf-8");
+      return version;
+    }
+
     async getNextChapterNumber(_bookId?: string): Promise<number> {
       return 1;
     }
@@ -216,6 +329,7 @@ vi.mock("@actalk/novelix-core", async (importOriginal) => {
     resolveSessionActiveBook: resolveSessionActiveBookMock,
     runAgentSession: runAgentSessionMock,
     buildAgentSystemPrompt: vi.fn(() => "You are helpful."),
+    countChapterLength: actual.countChapterLength,
     listAvailableGenres: actual.listAvailableGenres,
     readGenreProfile: actual.readGenreProfile,
     getBuiltinGenresDir: actual.getBuiltinGenresDir,
@@ -245,6 +359,7 @@ vi.mock("@actalk/novelix-core", async (importOriginal) => {
     probeModelsFromUpstream: probeModelsFromUpstreamMock,
     fetchWithProxy: vi.fn((input: Parameters<typeof fetch>[0], init?: RequestInit) => fetch(input, init)),
     GLOBAL_ENV_PATH: join(tmpdir(), "novelix-global.env"),
+    resolveLengthCountingMode: actual.resolveLengthCountingMode,
   };
 });
 
@@ -2101,6 +2216,62 @@ describe("createStudioServer daemon lifecycle", () => {
     });
     expect(rollbackToChapterMock).toHaveBeenCalledWith("demo-book", 2);
     expect(saveChapterIndexMock).not.toHaveBeenCalled();
+  });
+
+  it("exposes chapter review versions and restores a selected version", async () => {
+    loadBookConfigMock.mockResolvedValue({
+      id: "demo-book",
+      title: "Demo",
+      genre: "urban",
+      status: "active",
+      chapterWordCount: 1800,
+      language: "en",
+    });
+    loadChapterIndexMock.mockResolvedValue([
+      {
+        number: 3,
+        title: "Demo",
+        status: "ready-for-review",
+        wordCount: 1,
+        createdAt: "2026-04-07T00:00:00.000Z",
+        updatedAt: "2026-04-07T00:00:00.000Z",
+        auditIssues: [],
+        lengthWarnings: [],
+      },
+    ]);
+
+    const { createStudioServer } = await import("./server.js");
+    const app = createStudioServer(cloneProjectConfig() as never, root);
+
+    const saveResponse = await app.request("http://localhost/api/v1/books/demo-book/chapters/3", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: "# Demo\n\nEdited body" }),
+    });
+    expect(saveResponse.status).toBe(200);
+
+    const reviewResponse = await app.request("http://localhost/api/v1/books/demo-book/chapters/3/review");
+    expect(reviewResponse.status).toBe(200);
+    const review = await reviewResponse.json() as {
+      baseVersion: { id: string; reason: string; content: string };
+      versions: Array<{ id: string; reason: string }>;
+      diff: Array<{ type: string; lines: string[] }>;
+    };
+    expect(review.baseVersion.reason).toBe("manual-edit");
+    expect(review.baseVersion.content).toBe("# Demo\n\nBody");
+    expect(review.versions).toHaveLength(1);
+    expect(review.diff).toEqual(expect.arrayContaining([
+      { type: "removed", lines: ["Body"] },
+      { type: "added", lines: ["Edited body"] },
+    ]));
+
+    const restoreResponse = await app.request(
+      `http://localhost/api/v1/books/demo-book/chapters/3/versions/${review.baseVersion.id}/restore`,
+      { method: "POST" },
+    );
+    expect(restoreResponse.status).toBe(200);
+    await expect(readFile(join(root, "books", "demo-book", "chapters", "0003_Demo.md"), "utf-8"))
+      .resolves.toBe("# Demo\n\nBody");
   });
 
   it("routes create requests through the shared structured interaction runtime", async () => {

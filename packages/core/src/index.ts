@@ -345,7 +345,11 @@ export { runAgentLoop, AGENT_TOOLS as AGENT_TOOLS, type AgentLoopOptions } from 
 export { detectChapter, detectAndRewrite, loadDetectionHistory, type DetectChapterResult, type DetectAndRewriteResult } from "./pipeline/detection-runner.js";
 
 // State
-export { StateManager } from "./state/manager.js";
+export {
+  StateManager,
+  type ChapterContentSnapshot,
+  type ChapterVersionSnapshot,
+} from "./state/manager.js";
 export { bootstrapStructuredStateFromMarkdown } from "./state/state-bootstrap.js";
 export { renderCurrentStateProjection, renderHooksProjection, renderChapterSummariesProjection } from "./state/state-projections.js";
 export { applyRuntimeStateDelta, type RuntimeStateSnapshot } from "./state/state-reducer.js";
