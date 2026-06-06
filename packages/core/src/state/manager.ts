@@ -32,6 +32,19 @@ export interface ChapterVersionSnapshot {
   readonly contentLength: number;
 }
 
+
+function isValidVersionSnapshot(parsed: Partial<ChapterVersionSnapshot>, expectedChapter: number, expectedId?: string): parsed is ChapterVersionSnapshot {
+  return (
+    typeof parsed.id === "string" &&
+    parsed.chapterNumber === expectedChapter &&
+    typeof parsed.filename === "string" &&
+    typeof parsed.reason === "string" &&
+    typeof parsed.createdAt === "string" &&
+    typeof parsed.content === "string" &&
+    (!expectedId || parsed.id === expectedId)
+  );
+}
+
 export class StateManager {
   /** Books actively being written by this process — used for same-process stale lock detection. */
   private readonly activeWrites = new Set<string>();
@@ -364,23 +377,11 @@ export class StateManager {
           try {
             const raw = await readFile(join(versionDir, file), "utf-8");
             const parsed = JSON.parse(raw) as Partial<ChapterVersionSnapshot>;
-            if (
-              parsed.id !== file ||
-              parsed.chapterNumber !== chapterNumber ||
-              typeof parsed.filename !== "string" ||
-              typeof parsed.reason !== "string" ||
-              typeof parsed.createdAt !== "string" ||
-              typeof parsed.content !== "string"
-            ) {
+            if (!isValidVersionSnapshot(parsed, chapterNumber, file)) {
               return null;
             }
             return {
-              id: parsed.id,
-              chapterNumber: parsed.chapterNumber,
-              filename: parsed.filename,
-              reason: parsed.reason,
-              createdAt: parsed.createdAt,
-              content: parsed.content,
+              ...parsed,
               contentLength: parsed.contentLength ?? parsed.content.length,
             };
           } catch {
@@ -408,23 +409,11 @@ export class StateManager {
 
     try {
       const parsed = JSON.parse(raw) as Partial<ChapterVersionSnapshot>;
-      if (
-        parsed.id !== versionId ||
-        parsed.chapterNumber !== chapterNumber ||
-        typeof parsed.filename !== "string" ||
-        typeof parsed.reason !== "string" ||
-        typeof parsed.createdAt !== "string" ||
-        typeof parsed.content !== "string"
-      ) {
+      if (!isValidVersionSnapshot(parsed, chapterNumber, versionId)) {
         return null;
       }
       return {
-        id: parsed.id,
-        chapterNumber: parsed.chapterNumber,
-        filename: parsed.filename,
-        reason: parsed.reason,
-        createdAt: parsed.createdAt,
-        content: parsed.content,
+        ...parsed,
         contentLength: parsed.contentLength ?? parsed.content.length,
       };
     } catch {
@@ -450,9 +439,11 @@ export class StateManager {
       this.isSafeChapterFilename(chapterNumber, version.filename)
     ) {
       const targetPath = join(this.bookDir(bookId), "chapters", version.filename);
-      const targetExists = await stat(targetPath).then(() => true, () => false);
-      if (!targetExists) {
+      try {
         await rename(current.path, targetPath);
+      } catch (e) {
+        // EEXIST is expected if another process already restored; other errors are real
+        if ((e as NodeJS.ErrnoException)?.code !== "EEXIST") throw e;
       }
     }
     return version;

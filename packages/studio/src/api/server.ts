@@ -2022,6 +2022,7 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
   app.get("/api/v1/books/:id/chapters/:num/review", async (c) => {
     const id = c.req.param("id");
     const num = parseInt(c.req.param("num"), 10);
+    if (!Number.isFinite(num) || num < 1) return c.json({ error: "Invalid chapter number" }, 400);
     const requestedVersionId = c.req.query("version");
 
     try {
@@ -2141,6 +2142,7 @@ export function createStudioServer(initialConfig: ProjectConfig, root: string) {
   app.post("/api/v1/books/:id/chapters/:num/versions/:versionId/restore", async (c) => {
     const id = c.req.param("id");
     const num = parseInt(c.req.param("num"), 10);
+    if (!Number.isFinite(num) || num < 1) return c.json({ error: "Invalid chapter number" }, 400);
     const versionId = c.req.param("versionId");
 
     try {
@@ -5503,9 +5505,11 @@ export async function startStudioServer(
   if (options?.staticDir) {
     // Serve static assets (js, css, etc.)
     app.get("/assets/*", async (c) => {
-      const filePath = resolve(options.staticDir!, c.req.path.replace(/^\/assets\//, ""));
-      // Guard against path traversal
-      const rel = relative(options.staticDir!, filePath);
+      const staticDir = resolve(options.staticDir!);
+      // c.req.path is the full request path (e.g. /assets/index-xxx.css);
+      // join with staticDir and normalize, then verify the result stays under staticDir.
+      const filePath = resolve(join(staticDir, c.req.path));
+      const rel = relative(staticDir, filePath);
       if (rel.startsWith("..") || isAbsolute(rel)) {
         return c.notFound();
       }
